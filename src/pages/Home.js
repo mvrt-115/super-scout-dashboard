@@ -7,12 +7,14 @@ function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const regional = 'LAN';
-        const match = '80';
-        const alliance = 'red';
-        const team = '115';
+        const regional = 'CASF';
+        const match = '31';
+        const alliance = 'blue';
+        const team = '31';
         const request = await db
-          .collection(regional)
+          .collection('regional')
+          .doc(regional)
+          .collection('matches')
           .doc(match)
           .collection(alliance)
           .doc(team)
