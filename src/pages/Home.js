@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { db } from '../firebase';
 
 function Home() {
+  const [regionals, setRegionals] = useState([])
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -20,6 +21,8 @@ function Home() {
           .doc(team)
           .get();
         console.log(request.data());
+        const regionalRequest = await db.collection('regional').get();
+        setRegionals(regionalRequest.docs.map(doc => doc.id));
       } catch (e) {
         console.log(e);
       }
@@ -31,6 +34,12 @@ function Home() {
     <>
       <h1>home</h1>
       <Link to="/scanner">Scanner</Link>;
+      <ul>
+        {regionals.map((regional, index) => (
+          <li key={regional}><Link to={`/regional/${regional}`} >{regional}</Link></li>
+        ))}
+      </ul>
+      
     </>
   );
 }
