@@ -36,7 +36,7 @@ function Home() {
       <Link to="/scanner">Scanner</Link>;
       <ul>
         {regionals.map((regional, index) => (
-          <li key={regional}><Link to={`/regional/${regional}`} >{regional}</Link></li>
+          <li className = "link" key={regional}><Link to={`/regional/${regional}`} >{regional}</Link></li>
         ))}
       </ul>
       
