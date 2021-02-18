@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "mvrt-super-scout"
+  },
+  "targets": {
+    "mvrt-super-scout": {
+      "hosting": {
+        "dashboard": [
+          "mvrt-super-scout"
+        ]
+      }
+    }
+  }
+}
