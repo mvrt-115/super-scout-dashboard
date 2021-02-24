@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { db } from '../firebase';
+import SearchTeams from './SearchTeams';
 
 function Home() {
   const [regionals, setRegionals] = useState([])
@@ -32,14 +33,14 @@ function Home() {
 
   return (
     <>
-      <h1>home</h1>
+      <h1>home</h1> 
+      <SearchTeams />
       <Link to="/scanner">Scanner</Link>;
       <ul>
         {regionals.map((regional, index) => (
           <li className = "link" key={regional}><Link to={`/regional/${regional}`} >{regional}</Link></li>
         ))}
       </ul>
-      
     </>
   );
 }

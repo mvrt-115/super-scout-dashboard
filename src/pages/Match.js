@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { db } from '../firebase';
 
 const  Match = ({ match }) => {
@@ -22,14 +23,16 @@ const  Match = ({ match }) => {
 
     return (
         <>
-            <h2>Red Alliance</h2>
+            <h2 style={{color: "red"}}>Red Alliance</h2>
             <ul>
                 {redData.map(data => <li className = "data">{JSON.stringify(data, undefined, 2)}</li>)}
             </ul>
-            <h2>Blue Alliance</h2>
+            <h2 style={{color: "blue"}}>Blue Alliance</h2>
             <ul>
                 {blueData.map(data => <li className = "data">{JSON.stringify(data, undefined, 2)}</li>)}
             </ul>
+
+            <Link to="/" >Back to home</Link>
         </>
     )
 }

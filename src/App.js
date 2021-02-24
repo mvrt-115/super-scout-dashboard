@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Match from './pages/Match';
 import Regional from './pages/Regional';
 import Scanner from './pages/Scanner';
+import TeamData from './pages/TeamData';
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
         }} />
         <Route exact path="/regional/:regional" component={Regional} />
         <Route exact path="/regional/:regional/match/:match" component={Match} />
+        <Route exact path="/teams/:regional/:team/:match" component={TeamData} />
+        <Route exact path="/teams/:regional/:team/" component={TeamData} />
       </Switch>
     </Router>
   );
