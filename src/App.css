@@ -52,3 +52,17 @@ ul {
     padding: 0;
     list-style-type: none;
 }
+.btn, .dropdown-toggle {
+    color: white;
+    background-color: #7300b5;
+    border: none;
+}
+.btn:hover {
+    background-color: #64029c;
+}
+.btn:disabled {
+    background-color: #7300b5;
+}
+.btn:focus {
+    background-color: #8b04da;
+}
