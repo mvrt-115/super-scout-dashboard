@@ -50,7 +50,7 @@ function Navigation() {
             <Navbar.Collapse className="justify-content-end" >
                 <Nav>
                     <Navbar.Text style={{color: "black"}}>Select a regional</Navbar.Text>
-                    <Dropdown>
+                    <Dropdown style={{marginLeft: "5px"}}>
                         <Dropdown.Toggle id="dropdown-basic">
                             {regional}
                         </Dropdown.Toggle>
@@ -58,10 +58,10 @@ function Navigation() {
                             {regionals.map(regional => <Dropdown.Item onSelect={(e) => setRegional(regional)} key={regional}>{regional}</Dropdown.Item>)}
                         </Dropdown.Menu>
                     </Dropdown>
-                    <Form onSubmit={searchTeams} inline>
-                        <Form.Label>Search for a team</Form.Label>
+                    <Form onSubmit={searchTeams} inline style={{marginLeft: "5px", marginRight: "5px"}}>
+                        <Form.Label style={{marginLeft: "5px", marginRight: "5px"}}>Search for a team</Form.Label>
                         <Form.Control type="number" className="mr-sm-2" style={{width: 90}} onChange={(e) => setTeam(e.target.value)} placeholder="team" />
-                        <Form.Label>or a match</Form.Label>
+                        <Form.Label style={{marginRight: "5px"}}>or a match</Form.Label>
                         <Form.Control type="number" className="mr-sm-2" style={{width: 90}} onChange={(e) => setMatch(e.target.value)} placeholder="match"/>
                         <Button type="submit" disabled={!team && !match} >Search</Button>
                     </Form>
