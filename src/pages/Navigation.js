@@ -3,6 +3,7 @@ import { Nav, Navbar, Dropdown, Form, Button } from 'react-bootstrap';
 import { Link, useHistory } from 'react-router-dom';
 import { db } from '../firebase';
 
+// Navbar to navigate website
 function Navigation() {
   const [regionals, setRegionals] = useState([]);
   const [regional, setRegional] = useState("");
@@ -24,6 +25,7 @@ function Navigation() {
     fetchData();
   }, []);
 
+  // when the user searches, redirect them to a team at a regional/team at a match at the regional
   const searchTeams = (event) => {
     event.preventDefault();
 
@@ -40,13 +42,11 @@ function Navigation() {
 }
 
   return (
-        <Navbar className="">
+        <Navbar>
+            {/* Top left title of website */}
             <Navbar.Brand as={Link} to="/" style={{color: "#7300b5"}}>MVRT Super Scout Dashboard</Navbar.Brand>
-            <Nav>
-                <Nav.Link as={Link} to="/time-series">Time Series</Nav.Link>
-                <Nav.Link as={Link} to="/stats">Stats</Nav.Link>
-            </Nav>
             
+            {/* Form for searching for a regional */}
             <Navbar.Collapse className="justify-content-end" >
                 <Nav>
                     <Navbar.Text style={{color: "black"}}>Select a regional</Navbar.Text>
@@ -61,7 +61,7 @@ function Navigation() {
                     <Form onSubmit={searchTeams} inline style={{marginLeft: "5px", marginRight: "5px"}}>
                         <Form.Label style={{marginLeft: "5px", marginRight: "5px"}}>Search for a team</Form.Label>
                         <Form.Control type="number" className="mr-sm-2" style={{width: 90}} onChange={(e) => setTeam(e.target.value)} placeholder="team" />
-                        <Form.Label style={{marginRight: "5px"}}>or a match</Form.Label>
+                        <Form.Label style={{marginRight: "5px"}}>and or a match</Form.Label>
                         <Form.Control type="number" className="mr-sm-2" style={{width: 90}} onChange={(e) => setMatch(e.target.value)} placeholder="match"/>
                         <Button type="submit" disabled={!team && !match} >Search</Button>
                     </Form>

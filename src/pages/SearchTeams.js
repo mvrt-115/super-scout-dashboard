@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { db } from '../firebase';
 
+// input form to search for a team, not currently used because search is in navbar
 const SearchTeams = () => {
-    const [submitted, setSubmitted] = useState(false);
     const [incorrectSubmisssion, setIncorrectSubmisssion] = useState(false);
     const history = useHistory();
 

@@ -1,5 +1,5 @@
-import firebase from 'firebase';
-import 'firebase/auth';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 import 'firebase/storage';
 
 const firebaseConfig = {
@@ -11,7 +11,8 @@ const firebaseConfig = {
   appId: '1:815801961451:web:d62ca1612492aeae30e7ae',
   measurementId: 'G-M2ZNQKJ44V',
 };
-const app = firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 
-export const db = app.firestore();
-export const storage = app.storage();
+export const db = firebase.firestore();
+
+export const storage = firebase.storage();

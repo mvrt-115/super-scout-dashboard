@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase';
 
+// displays matches and teams in a given regional
 const Regional = ({ match }) => {
     const regional = match.params.regional;
     const [matches, setMatches] = useState([]);
@@ -9,24 +10,34 @@ const Regional = ({ match }) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const matchRef = await db.collection("regional").doc(regional).collection("matches").get();
-            setMatches(matchRef.docs.map(doc => doc.id));
+            try {
+                // fetch matches
+                const matchRef = await db.collection("regional").doc(regional).collection("matches").get();
+                setMatches(matchRef.docs.map(doc => doc.id));
 
-            const teamRef = await db.collection("regional").doc(regional).collection("teams").get();
-            setTeams(teamRef.docs.map(doc => doc.id));
+                // fetch teams
+                const teamRef = await db.collection("regional").doc(regional).collection("teams").get();
+                setTeams(teamRef.docs.map(doc => doc.id));
+            } catch (e) {
+                console.log(e);
+            }
+            
         }
         fetchData();
-    }, [])
+    }, [regional])
 
     return (
         <>
+            {/* Breadcrumbs */}
             <div>
                 <h3><Link to="/">Home</Link> / {regional}</h3>
             </div>
+            {/* Display matches */}
             <h3>Matches:</h3>
             <ul>
                 {matches.map(match => <li className = "link" ><Link to={`/regional/${regional}/match/${match}`}>{match}</Link></li>)}
             </ul>
+            {/* Display teams */}
             <h3>Teams:</h3>
             <ul>
                 {teams.map(team => <li className = "link" ><Link to={`/teams/${regional}/${team}`}>{team}</Link></li>)}

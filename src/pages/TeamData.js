@@ -1,122 +1,122 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { DiscreteColorLegend, HorizontalGridLines, VerticalBarSeries, HorizontalBarSeries, VerticalGridLines, XAxis, XYPlot, YAxis, RadialChart } from 'react-vis';
+import { DiscreteColorLegend, HorizontalGridLines, VerticalBarSeries, VerticalGridLines, XAxis, XYPlot, YAxis, RadialChart } from 'react-vis';
 import { db } from '../firebase';
 import "react-vis/dist/style.css";
 import * as math from 'mathjs';
 import { Button, Col, Row } from 'react-bootstrap';
 
-
+// displays the a team's data (team and regional are passed in through link and router stuff)
 function TeamData({match}) {
+    // get team regional and match from url
     const team = match.params.team;
     const regional = match.params.regional;
     const matchNum = match.params.match;
 
+    // array of match data
     const [matches, setMatches] = useState([]);
+
+    // if the page is still getting data from firebase
     const [loading, setLoading] = useState(true);
 
+    // showing graphs state
     const [timeSeriesVisible, setTimeSeriesVisisble] = useState(false);
 
-    const [dataG1Auton, setDataG1Auton] = useState([]) 
-    const [dataG1Teleop, setDataG1Teleop] = useState([])
+    // auton and teleop data for the first graph
+    const [dataG1Auton, setDataG1Auton] = useState([]);
+    const [dataG1Teleop, setDataG1Teleop] = useState([]);
 
-    const [autonData, setAutonData] = useState([])
-    const [teleopData, setTeleopData] = useState([])
+    // auton and teleop data for min, median, max graphs
+    const [autonData, setAutonData] = useState([]);
+    const [teleopData, setTeleopData] = useState([]);
 
-    const [points, setPoints] = useState([])
+    // total points scored
+    const [points, setPoints] = useState([]);
 
-    //Radial chart to keep trak of climb fails and successes
-    const [climbFails, setClimbFails] = useState(0)
-    const [climbSuccesses, setClimbSuccesses] = useState(0)
-    const [didNotAttempts, setAttemptHang] = useState(0)
+    // Radial chart data to keep track of climb fails and successes
     const [pieChartData, setPieChartData] = useState([])
 
-    
-
-    const totalPoints = (data, gameState) => {
-        let bottomMult = 1
-        let outerMult = 2
-        let innerMult = 3;
-        if(gameState === "auton"){
-            bottomMult = 2
-            outerMult = 4
-            innerMult = 6
-            
-            return (data.autonBottom * bottomMult) + (data.autonUpper * outerMult) + (data.autonInner * innerMult)
-        }
-        return (data.teleopBottom * bottomMult) + (data.teleopUpper * outerMult) + (data.teleopInner * innerMult)
+    // calculates total auton/teleop points
+    const totalPoints = (data, gameState) => {  
+        return gameState === "auton" ? (data.autonBottom * 2) + (data.autonUpper * 4) + (data.autonInner * 6) :
+        (data.teleopBottom) + (data.teleopUpper * 2) + (data.teleopInner * 3)
     }
-    
 
+    // called when team/regional/match changes and when page starts up
     useEffect(() => {
         const fetchData = async () => {
-            if(matchNum) {
-                const matchRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").doc(matchNum).get();
-                setMatches([matchRef.data()]);
-            } else {
-                const teamRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").get()
-                let auton = [];
-                let teleop = [];
-                let autonBalls = [];
-                let teleopBalls = [];
-                let climbFailsNum = 0;
-                let climbSucessNum = 0;
-                let didNotAttemptsNum = 0;
-                let totalAttempts = 0;
-                let pointsData = [];
-                setMatches(teamRef.docs.map((doc, index) => {
-                    if(!doc.exists) 
-                        return {}
-                    auton = [...auton, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "auton")}];
-                    teleop = [...teleop, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "teleop")}];
-                    autonBalls = [...autonBalls, doc.data().data.autonInner + doc.data().data.autonUpper + doc.data().data.autonBottom];
-                    teleopBalls = [...teleopBalls, doc.data().data.teleopInner + doc.data().data.teleopUpper + doc.data().data.teleopBottom];
-                    pointsData = [...pointsData, {x: doc.data().data.matchNum, y: auton[index].y + teleop[index].y}]
+            try {
+                // if a match is selected get the data from this teams performance in that match from firebase
+                if(matchNum) {
+                    const matchRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").doc(matchNum).get();
+                    setMatches([matchRef.data()]);
+                // otherwise get all team dataa
+                } else {
+                    // get all matches that the team has played from firebase
+                    const teamRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").get()
                     
-                    //other pie chart shows the number of attempts of climbing
-                    if(doc.data().data.attemptHang){
-                        totalAttempts++;
-                    }
-                    else{
-                        totalAttempts++; 
-                        didNotAttemptsNum++;
-                    }
-                    
-                    if(doc.data().data.attemptHang){
-                        if(doc.data().data.hangFail){
-                            climbFailsNum++;
-                        }
-                        else {
-                            climbSucessNum++;
-                        }
-                    }
-                    return doc.data()
-                }))
+                    // temporary variables that will be used to set state
+                    let auton = [];
+                    let teleop = [];
+                    let autonBalls = [];
+                    let teleopBalls = [];
+                    let climbFailsNum = 0;
+                    let climbSucessNum = 0;
+                    let didNotAttemptsNum = 0;
+                    let pointsData = [];
 
-                setDataG1Auton(auton);
-                setDataG1Teleop(teleop);
-                setClimbFails(climbFailsNum);
-                setClimbSuccesses(climbSucessNum);
-                setAttemptHang(didNotAttemptsNum)
-                setPoints(pointsData);
-                setPieChartData([{angle: 10, label: "Failed to Climb", color: "#fcba03"}, {angle: 1, label: "Climb Successes", color: "#ffd769"}, {angle: 2, label: "Did not attempt", color: "#a849de"}])
-                //setPieChartData([ {angle: 1, radius: 10}, {angle: 2, label: 'Super Custom label', subLabel: 'With annotation', radius: 20}, {angle: 5, radius: 5, label: 'Alt Label'}, {angle: 3, radius: 14}, {angle: 5, radius: 12, subLabel: 'Sub Label only', className: 'custom-class'} ])
-                //setPieChartData([{angle: 10, label: "Failed to Climb"}, {angle: 1, label: "Climb Successes"}, {angle: 2, label: "Did not attempt"}])
+                    setMatches(teamRef.docs.map((doc, index) => {
+                        if(!doc.exists) 
+                            return {}
+                        // updating data based on each match
+                        auton = [...auton, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "auton")}];
+                        teleop = [...teleop, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "teleop")}];
+                        autonBalls = [...autonBalls, doc.data().data.autonInner + doc.data().data.autonUpper + doc.data().data.autonBottom];
+                        teleopBalls = [...teleopBalls, doc.data().data.teleopInner + doc.data().data.teleopUpper + doc.data().data.teleopBottom];
+                        pointsData = [...pointsData, {x: doc.data().data.matchNum, y: auton[index].y + teleop[index].y}];
+                        
+                        if(!doc.data().data.attemptHang){
+                            didNotAttemptsNum++;
+                        }
+                        
+                        if(doc.data().data.attemptHang){
+                            if(doc.data().data.hangFail){
+                                climbFailsNum++;
+                            }
+                            else {
+                                climbSucessNum++;
+                            }
+                        }
+                        return doc.data();
+                    }))
 
-                if(matches.length) {
-                    setAutonData([
-                        {x: "min", y: math.min(autonBalls)},
-                        {x: "median", y: math.median(autonBalls)},
-                        {x: "max", y: math.max(autonBalls)},
-                    ])
-                    setTeleopData([
-                        {x: "min", y: math.min(teleopBalls)},
-                        {x: "median", y: math.median(teleopBalls)},
-                        {x: "max", y: math.max(teleopBalls)},
-                    ])
+                    // changing the state of different things
+                    setDataG1Auton(auton);
+                    setDataG1Teleop(teleop);
+                    setPoints(pointsData);
+                    setPieChartData([
+                        {angle: climbFailsNum, label: "Failed to Climb", color: "#fcba03"}, 
+                        {angle: climbSucessNum, label: "Climb Successes", color: "#ffd769"}, 
+                        {angle: didNotAttemptsNum, label: "Did not attempt", color: "#a849de"}
+                    ]);
+
+                    if(matches.length) {
+                        setAutonData([
+                            {x: "min", y: math.min(autonBalls)},
+                            {x: "median", y: math.median(autonBalls)},
+                            {x: "max", y: math.max(autonBalls)},
+                        ])
+                        setTeleopData([
+                            {x: "min", y: math.min(teleopBalls)},
+                            {x: "median", y: math.median(teleopBalls)},
+                            {x: "max", y: math.max(teleopBalls)},
+                        ])
+                    }
                 }
+            } catch(e) {
+                console.log(e);
             }
-            setLoading(false)
+            setLoading(false);
         }
         fetchData();
     }, [matchNum, regional, team, matches.length]);
@@ -124,6 +124,7 @@ function TeamData({match}) {
 
     return (
         <>
+            {/* Breadcrumbs */}
             <div>
                 <h3>
                     <Link to="/">Home</Link> / 
@@ -131,132 +132,122 @@ function TeamData({match}) {
                     {matchNum ? <><Link to={"/teams/" + regional + "/" + team}> Team # {team}</Link> / Match # {matchNum} </> : <> Team # {team}</>}
                 </h3>
             </div>
+            {/* once loaded show the data */}
             {!loading && 
             <>
+                {/* displays match data from matches array */}
                 <ul>
                 {matches && matches.length ? matches.map((match) => ( match ? (
-                    <li className = "data">
+                    <li className = "data" key={match.data.matchNum}>
                         <h3><Link to={"/teams/" + regional + "/" + team + "/" + match.data.matchNum}>Match # {match.data.matchNum}</Link></h3>
                         {JSON.stringify(match, null, 1)}
                     </li>
                 ) : <></>)) : (<><h1>There are no mathes played by this team or this team did not play this match</h1></>)}
                 </ul>
-                {(dataG1Auton || dataG1Teleop || autonData) && <Button onClick={() => setTimeSeriesVisisble(!timeSeriesVisible)}>Toggle Graphs</Button>}
-                    <Row>
-                        {dataG1Auton && dataG1Teleop && timeSeriesVisible &&
-                        <Col>
-                            <XYPlot xType="ordinal" width={300} height={350} xDistance={100}>
-                                <DiscreteColorLegend
-                                    style={{position: 'absolute', left: '50px', top: '10px'}}
-                                    orientation="vertical"
-                                    items={[
-                                    {
-                                        title: 'Auton Points',
-                                        color: '#7300b5'
-                                    },
-                                    {
-                                        title: 'Teleop Points',
-                                        color: '#fcba03'
-                                    }
-                                    ]}
-                                />
-                                <VerticalGridLines />
-                                <HorizontalGridLines />
-                                
-                                <VerticalBarSeries className="vertical-bar-series-example" data={dataG1Teleop} color="#7300b5" />
-                                <VerticalBarSeries data={dataG1Auton} color="#fcba03"/>
-                                <XAxis title="Match #"/>
-                                <YAxis title="Points"/>
-                            </XYPlot>
-                        </Col>}
-                        {autonData && timeSeriesVisible && 
-                        <Col>
-                            <XYPlot xType="ordinal" width={300} height={350} xDistance={100} stackBy="y">
-                                <DiscreteColorLegend
-                                    style={{position: 'absolute', left: '50px', top: '10px'}}
-                                    orientation="vertical"
-                                    items={[
-                                    {
-                                        title: 'Auton Balls Scored',
-                                        color: '#7300b5'
-                                    }
-                                    ]}
-                                />
-                                <VerticalGridLines />
-                                <HorizontalGridLines />
-                                <VerticalBarSeries data={autonData} color="#7300b5" />
-                                <XAxis />
-                                <YAxis />
-                            </XYPlot>
-                        </Col>
-                        }
-                        {teleopData && timeSeriesVisible &&
-                        <Col>
-                            <XYPlot xType="ordinal" width={300} height={350} xDistance={100}>
-                                <DiscreteColorLegend
-                                    style={{position: 'absolute', left: '50px', top: '10px'}}
-                                    orientation="vertical"
-                                    items={[
-                                    {
-                                        title: 'Teleop Balls Scored',
-                                        color: '#7300b5'
-                                    }
-                                    ]}
-                                />
-                                <VerticalGridLines />
-                                <HorizontalGridLines />
-                                <VerticalBarSeries data={teleopData} color="#7300b5"/>
-
-                                <XAxis />
-                                <YAxis />
-                            </XYPlot>
-                        </Col>
-                        }
-                        {points && timeSeriesVisible &&
-                        <Col>
-                            <XYPlot xType="ordinal" width={300} height={350} xDistance={100}>
-                                <DiscreteColorLegend
-                                    style={{position: 'absolute', left: '50px', top: '10px'}}
-                                    orientation="vertical"
-                                    items={[
-                                    {
-                                        title: 'Points Scored',
-                                        color: '#fcba03'
-                                    }
-                                    ]}
-                                />
-                                <VerticalGridLines />
-                                <HorizontalGridLines />
-                                <VerticalBarSeries data={points} color="#fcba03"/>
-                                <XAxis title="Match # "/>
-                                <YAxis title="Points" />
-                            </XYPlot>
-                        </Col>
-                        }
-                        {/* Climb, Failed, did not attempt */}
-                        {timeSeriesVisible && pieChartData && (
-                            <Col>
-                                <RadialChart
-                                data={pieChartData}
-                                showLabels={true}
-                                labelsStyle={{
-                                    fontSize:10,
-                                }}
-                                innerRadius={100}
-                                padAngle={0.00}
-                                colorType="literal"
-                                showLabels={true}
-                                labelsRadiusMultiplier={0.8}
-                                labelsAboveChildren={true}
-                                width={300}
-                                height={300}
-                                >
-                                    {/* <DiscreteColorLegend items={pieChartData.map(d => d.label)} colors={['#7300b5', '#9b22e0', '#a849de']}/> */}
-                                </RadialChart>
-                            </Col>
-                        ) }
-                    </Row>
+                {(matches.length > 1) && <Button onClick={() => setTimeSeriesVisisble(!timeSeriesVisible)}>Toggle Graphs</Button>}
                 
+                {matches.length > 1 && timeSeriesVisible && <Row>
+                    {/* Teleop vs Auton points per game bar chart */}
+                    <Col>
+                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100}>
+                            <DiscreteColorLegend
+                                style={{position: 'absolute', left: '50px', top: '10px'}}
+                                orientation="vertical"
+                                items={[
+                                {
+                                    title: 'Auton Points',
+                                    color: '#7300b5'
+                                },
+                                {
+                                    title: 'Teleop Points',
+                                    color: '#fcba03'
+                                }
+                                ]}
+                            />
+                            <VerticalGridLines />
+                            <HorizontalGridLines />
+                            <VerticalBarSeries className="vertical-bar-series-example" data={dataG1Teleop} color="#7300b5" />
+                            <VerticalBarSeries data={dataG1Auton} color="#fcba03"/>
+                            <XAxis title="Match #"/>
+                            <YAxis title="Points"/>
+                        </XYPlot>
+                    </Col>
+                    {/* Auton min, median, max graph */}
+                    <Col>
+                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100} stackBy="y">
+                            <DiscreteColorLegend
+                                style={{position: 'absolute', left: '50px', top: '10px'}}
+                                orientation="vertical"
+                                items={[
+                                {
+                                    title: 'Auton Balls Scored',
+                                    color: '#7300b5'
+                                }
+                                ]}
+                            />
+                            <VerticalGridLines />
+                            <HorizontalGridLines />
+                            <VerticalBarSeries data={autonData} color="#7300b5" />
+                            <XAxis />
+                            <YAxis />
+                        </XYPlot>
+                    </Col>
+                    {/* Teleop min, median, max graph */}
+                    <Col>
+                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100}>
+                            <DiscreteColorLegend
+                                style={{position: 'absolute', left: '50px', top: '10px'}}
+                                orientation="vertical"
+                                items={[
+                                {
+                                    title: 'Teleop Balls Scored',
+                                    color: '#7300b5'
+                                }
+                                ]}
+                            />
+                            <VerticalGridLines />
+                            <HorizontalGridLines />
+                            <VerticalBarSeries data={teleopData} color="#7300b5"/>
+                            <XAxis />
+                            <YAxis />
+                        </XYPlot>
+                    </Col>
+                    {/* total points per match bar chart */}
+                    <Col>
+                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100}>
+                            <DiscreteColorLegend
+                                style={{position: 'absolute', left: '50px', top: '10px'}}
+                                orientation="vertical"
+                                items={[
+                                {
+                                    title: 'Points Scored',
+                                    color: '#fcba03'
+                                }
+                                ]}
+                            />
+                            <VerticalGridLines />
+                            <HorizontalGridLines />
+                            <VerticalBarSeries data={points} color="#fcba03"/>
+                            <XAxis title="Match # "/>
+                            <YAxis title="Points" />
+                        </XYPlot>
+                    </Col>
+                    {/* Climb, Failed, did not attempt */}
+                    <Col>
+                        <RadialChart
+                            data={pieChartData}
+                            labelsStyle={{
+                                fontSize:10,
+                            }}
+                            colorType="literal"
+                            showLabels={true}
+                            labelsRadiusMultiplier={0.8}
+                            labelsAboveChildren={true}
+                            width={300}
+                            height={300}
+                        />
+                    </Col>
+                </Row>}
             </>}
         </>
     )
