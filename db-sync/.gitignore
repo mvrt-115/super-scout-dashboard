@@ -1,0 +1,6 @@
+*.pyc
+venv
+services/certificate.json
+posters/
+channels/
+genres/
