@@ -44,11 +44,11 @@ const Match = ({ match }) => {
             {redData.length || blueData.length ? <>
                 <h2 style={{color: "red"}}>Red Alliance</h2>
                 <ul>
-                    {redData.map(data => <li className = "data">{JSON.stringify(data, undefined, 2)}</li>)}
+                    {redData.map(data => <><h2><Link to={"/teams/" + regional + "/" + data.data.teamNum}>Team # {data.data.teamNum}</Link></h2><li className = "data">{JSON.stringify(data, undefined, 2)}</li></>)}
                 </ul>
                 <h2 style={{color: "blue"}}>Blue Alliance</h2>
                 <ul>
-                    {blueData.map(data => <li className = "data">{JSON.stringify(data, undefined, 2)}</li>)}
+                    {redData.map(data => <><h2><Link to={"/teams/" + regional + "/" + data.data.teamNum}>Team # {data.data.teamNum}</Link></h2><li className = "data">{JSON.stringify(data, undefined, 2)}</li></>)}
                 </ul>
 
                 

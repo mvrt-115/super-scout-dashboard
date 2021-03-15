@@ -74,7 +74,7 @@ function TeamData({match}) {
                         autonBalls = [...autonBalls, doc.data().data.autonInner + doc.data().data.autonUpper + doc.data().data.autonBottom];
                         teleopBalls = [...teleopBalls, doc.data().data.teleopInner + doc.data().data.teleopUpper + doc.data().data.teleopBottom];
                         pointsData = [...pointsData, {x: doc.data().data.matchNum, y: auton[index].y + teleop[index].y}];
-                        
+
                         if(!doc.data().data.attemptHang){
                             didNotAttemptsNum++;
                         }
@@ -87,6 +87,7 @@ function TeamData({match}) {
                                 climbSucessNum++;
                             }
                         }
+
                         return doc.data();
                     }))
 
@@ -95,9 +96,9 @@ function TeamData({match}) {
                     setDataG1Teleop(teleop);
                     setPoints(pointsData);
                     setPieChartData([
-                        {angle: climbFailsNum, label: "Failed to Climb", color: "#fcba03"}, 
-                        {angle: climbSucessNum, label: "Climb Successes", color: "#ffd769"}, 
-                        {angle: didNotAttemptsNum, label: "Did not attempt", color: "#a849de"}
+                        {angle: climbFailsNum, label: climbFailsNum > 0 ? "Failed to Climb" : "", color: "#fcba03"}, 
+                        {angle: climbSucessNum, label: climbSucessNum > 0 ? "Climb Successes" : "", color: "#ffd769"}, 
+                        {angle: didNotAttemptsNum, label: didNotAttemptsNum > 0 ? "Did not attempt" : "", color: "#a849de"}
                     ]);
 
                     if(matches.length) {
@@ -155,11 +156,11 @@ function TeamData({match}) {
                                 orientation="vertical"
                                 items={[
                                 {
-                                    title: 'Auton Points',
+                                    title: 'Teleop Points',
                                     color: '#7300b5'
                                 },
                                 {
-                                    title: 'Teleop Points',
+                                    title: 'Auton Points',
                                     color: '#fcba03'
                                 }
                                 ]}
@@ -238,11 +239,16 @@ function TeamData({match}) {
                             data={pieChartData}
                             labelsStyle={{
                                 fontSize:10,
+                                margin: 10,
                             }}
                             colorType="literal"
                             showLabels={true}
                             labelsRadiusMultiplier={0.8}
                             labelsAboveChildren={true}
+                            padAngle={0}
+                            margin={
+                                {left: 40, right: 40, top: 10, bottom: 10}
+                            }
                             width={300}
                             height={300}
                         />

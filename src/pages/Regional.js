@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase';
 
@@ -32,16 +33,22 @@ const Regional = ({ match }) => {
             <div>
                 <h3><Link to="/">Home</Link> / {regional}</h3>
             </div>
-            {/* Display matches */}
-            <h3>Matches:</h3>
-            <ul>
-                {matches.map(match => <li className = "link" ><Link to={`/regional/${regional}/match/${match}`}>{match}</Link></li>)}
-            </ul>
-            {/* Display teams */}
-            <h3>Teams:</h3>
-            <ul>
-                {teams.map(team => <li className = "link" ><Link to={`/teams/${regional}/${team}`}>{team}</Link></li>)}
-            </ul>
+            <Row>
+                <Col>
+                    {/* Display matches */}
+                    <h3>Matches:</h3>
+                    <ul>
+                        {matches.map(match => <li className = "link" ><Link to={`/regional/${regional}/match/${match}`}>{match}</Link></li>)}
+                    </ul>
+                    </Col>
+                <Col>
+                    {/* Display teams */}
+                    <h3>Teams:</h3>
+                    <ul>
+                        {teams.map(team => <li className = "link" ><Link to={`/teams/${regional}/${team}`}>{team}</Link></li>)}
+                    </ul>
+                </Col>
+            </Row>
         </>
     )
 }
