@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { DiscreteColorLegend, HorizontalGridLines, VerticalBarSeries, VerticalGridLines, XAxis, XYPlot, YAxis, RadialChart } from 'react-vis';
+import { DiscreteColorLegend, HorizontalGridLines, VerticalBarSeries, VerticalGridLines, XAxis, XYPlot, YAxis, RadialChart, Crosshair } from 'react-vis';
 import { db } from '../firebase';
 import "react-vis/dist/style.css";
 import * as math from 'mathjs';
@@ -25,13 +25,18 @@ function TeamData({match}) {
     // auton and teleop data for the first graph
     const [dataG1Auton, setDataG1Auton] = useState([]);
     const [dataG1Teleop, setDataG1Teleop] = useState([]);
+    const [crosshairG1, setCrosshairG1] = useState([])
 
     // auton and teleop data for min, median, max graphs
     const [autonData, setAutonData] = useState([]);
     const [teleopData, setTeleopData] = useState([]);
+    const [crosshairG2, setCrosshairG2] = useState([]);
+    const [crosshairG3, setCrosshairG3] = useState([]);
 
     // total points scored
     const [points, setPoints] = useState([]);
+    const [crosshairG4, setCrosshairG4] = useState([]);
+
 
     // Radial chart data to keep track of climb fails and successes
     const [pieChartData, setPieChartData] = useState([])
@@ -41,6 +46,9 @@ function TeamData({match}) {
         return gameState === "auton" ? (data.autonBottom * 2) + (data.autonUpper * 4) + (data.autonInner * 6) :
         (data.teleopBottom) + (data.teleopUpper * 2) + (data.teleopInner * 3)
     }
+
+    
+    
 
     // called when team/regional/match changes and when page starts up
     useEffect(() => {
@@ -150,7 +158,7 @@ function TeamData({match}) {
                 {matches.length > 1 && timeSeriesVisible && <Row>
                     {/* Teleop vs Auton points per game bar chart */}
                     <Col>
-                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100}>
+                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100} onMouseLeave={() => {setCrosshairG1([])}}>
                             <DiscreteColorLegend
                                 style={{position: 'absolute', left: '50px', top: '10px'}}
                                 orientation="vertical"
@@ -167,15 +175,24 @@ function TeamData({match}) {
                             />
                             <VerticalGridLines />
                             <HorizontalGridLines />
-                            <VerticalBarSeries className="vertical-bar-series-example" data={dataG1Teleop} color="#7300b5" />
+                            <VerticalBarSeries  
+                                onNearestX={(value, {index}) => {setCrosshairG1([{...dataG1Auton[index]}, {...dataG1Teleop[index]}])}} 
+                                className="vertical-bar-series-example" 
+                                data={dataG1Teleop} 
+                                color="#7300b5"/>
                             <VerticalBarSeries data={dataG1Auton} color="#fcba03"/>
                             <XAxis title="Match #"/>
                             <YAxis title="Points"/>
+                            <Crosshair 
+                                values={crosshairG1} 
+                                titleFormat={(d) => ({title: "Match Num", value: d[0].x})} 
+                                itemsFormat={(d) => ([{ title: "auton points", value: d[0].y }, { title: "teleop points", value: d[1].y }])}
+                            />
                         </XYPlot>
                     </Col>
                     {/* Auton min, median, max graph */}
                     <Col>
-                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100} stackBy="y">
+                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100} stackBy="y" onMouseLeave={() => setCrosshairG2([])}>
                             <DiscreteColorLegend
                                 style={{position: 'absolute', left: '50px', top: '10px'}}
                                 orientation="vertical"
@@ -188,14 +205,22 @@ function TeamData({match}) {
                             />
                             <VerticalGridLines />
                             <HorizontalGridLines />
-                            <VerticalBarSeries data={autonData} color="#7300b5" />
+                            <VerticalBarSeries 
+                                data={autonData} 
+                                color="#7300b5" 
+                                onNearestX={(value, {index}) => {setCrosshairG2([{...autonData[index], min: autonData[0].y, median: autonData[1].y, max: autonData[2].y}])} } 
+                            />
                             <XAxis />
                             <YAxis />
+                            <Crosshair 
+                                values={crosshairG2} 
+                                itemsFormat={(d) => ([{ title: "min", value: d[0].min }, { title: "median", value: d[0].median }, { title: "max", value: d[0].max }])}
+                            />
                         </XYPlot>
                     </Col>
                     {/* Teleop min, median, max graph */}
                     <Col>
-                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100}>
+                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100} onMouseLeave={() => setCrosshairG3([])}>
                             <DiscreteColorLegend
                                 style={{position: 'absolute', left: '50px', top: '10px'}}
                                 orientation="vertical"
@@ -208,14 +233,22 @@ function TeamData({match}) {
                             />
                             <VerticalGridLines />
                             <HorizontalGridLines />
-                            <VerticalBarSeries data={teleopData} color="#7300b5"/>
+                            <VerticalBarSeries 
+                                data={teleopData} 
+                                onNearestX={(value, {index}) => {setCrosshairG3([{...teleopData[index], min:teleopData[0].y, median:teleopData[1].y, max:teleopData[2].y}])} } 
+                                color="#7300b5"/>
                             <XAxis />
                             <YAxis />
+                            <Crosshair 
+                                values={crosshairG3} 
+                                
+                                itemsFormat={(d) => ([{ title: "min", value: d[0].min }, { title: "median", value: d[0].median }, { title: "max", value: d[0].max }])}
+                            />
                         </XYPlot>
                     </Col>
                     {/* total points per match bar chart */}
                     <Col>
-                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100}>
+                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100} onMouseLeave={() => setCrosshairG4([])}>
                             <DiscreteColorLegend
                                 style={{position: 'absolute', left: '50px', top: '10px'}}
                                 orientation="vertical"
@@ -228,9 +261,18 @@ function TeamData({match}) {
                             />
                             <VerticalGridLines />
                             <HorizontalGridLines />
-                            <VerticalBarSeries data={points} color="#fcba03"/>
+                            <VerticalBarSeries 
+                                data={points} 
+                                onNearestX={(value, {index}) => {setCrosshairG4([{...points[index]}])} } 
+                                color="#fcba03"
+                            />
                             <XAxis title="Match # "/>
                             <YAxis title="Points" />
+                            <Crosshair 
+                                values={crosshairG4} 
+                                itemsFormat={(d) => ([{ title: "points", value: d[0].y }])}
+                                titleFormat={(d) => ({ title: "Match Num", value: d[0].x })}
+                            />
                         </XYPlot>
                     </Col>
                     {/* Climb, Failed, did not attempt */}
@@ -251,6 +293,7 @@ function TeamData({match}) {
                             }
                             width={300}
                             height={300}
+                            
                         />
                     </Col>
                 </Row>}

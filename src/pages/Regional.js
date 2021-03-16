@@ -34,13 +34,13 @@ const Regional = ({ match }) => {
                 <h3><Link to="/">Home</Link> / {regional}</h3>
             </div>
             <Row>
-                <Col>
+                <Col>   
                     {/* Display matches */}
                     <h3>Matches:</h3>
                     <ul>
                         {matches.map(match => <li className = "link" ><Link to={`/regional/${regional}/match/${match}`}>{match}</Link></li>)}
                     </ul>
-                    </Col>
+                </Col>
                 <Col>
                     {/* Display teams */}
                     <h3>Teams:</h3>
