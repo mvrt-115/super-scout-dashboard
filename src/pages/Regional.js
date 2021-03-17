@@ -21,50 +21,48 @@ const Regional = ({ match }) => {
                 // fetch matches
                 const matchRef = await db.collection("regional").doc(regional).collection("matches").get();
                 const teamRef = await db.collection("regional").doc(regional).collection("teams").get();
-                // let teams = {};
+                let teams = {};
                 
-                // //loop through each team id
-                // teamRef.docs.forEach(async (doc) => {
+                //loop through each team id
+                teamRef.docs.forEach(async (doc) => {
 
                     
 
-                //     //get all matches from one team
-                //     const allTeamMatches = await db.collection("regional").doc(regional).collection("teams").doc(doc.id).collection("matches").get();
+                    //get all matches from one team
+                    const allTeamMatches = await db.collection("regional").doc(regional).collection("teams").doc(doc.id).collection("matches").get();
                     
-                //     //add all matches from team to doc
-                //     let matchArr = allTeamMatches.docs.map(doc => (doc.data().data));
+                    //add all matches from team to doc
+                    let matchArr = allTeamMatches.docs.map(doc => (doc.data().data));
 
-                //     Object.keys(matchArr[0]).forEach((key) => {
-                //         if(typeOf(matchArr[0][key]) === 'number') {
-                //             const ofKey = matchArr.map(match => match[key]);
-                //             console.log(ofKey)
-                //             try{
-                //                 teams[doc.id][key] = {
-                //                     min: math.min(ofKey),
-                //                     max: math.max(ofKey),
-                //                     median: math.median(ofKey),
-                //                     mean: math.mean(ofKey),
-                //                 }
-                //             } catch (e) {
-                //                 console.log(e);
-                //             }
-                //         }
+                    Object.keys(matchArr[0]).forEach((key) => {
+                        if(typeOf(matchArr[0][key]) === 'number') {
+                            const ofKey = matchArr.map(match => match[key]);
+                            console.log(ofKey)
+                            try{
+                                teams[doc.id][key] = {
+                                    min: math.min(ofKey),
+                                    max: math.max(ofKey),
+                                    median: math.median(ofKey),
+                                    mean: math.mean(ofKey),
+                                }
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        }
 
-                //     })
-                // })
+                    })
+                })
 
-                // console.log(teams);
+                console.log(teams);
 
-                // let matchesArr = matchRef.docs.map(doc => {
-                //     // console.log("doc", doc.data())
-                //     return ({data: doc.data(), id: doc.id})
-                // });
+                let matchesArr = matchRef.docs.map(doc => {
+                    console.log("doc", doc.data())
+                    return ({data: doc.data(), id: doc.id})
+                });
                 setMatches(matchRef.docs.map(doc => doc.id));
-
-                // fetch teams
                
-                // let teamsArr = teamRef.docs.map(doc => ({data: doc.data(), id: doc.id}));
-                // console.log("teams data", teamsArr);
+                let teamsArr = teamRef.docs.map(doc => ({data: doc.data(), id: doc.id}));
+                console.log("teams data", teamsArr);
                 setTeams(teamRef.docs.map(doc => doc.id));
 
                 // regionalData = {
