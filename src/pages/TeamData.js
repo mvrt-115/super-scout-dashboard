@@ -4,7 +4,7 @@ import { DiscreteColorLegend, HorizontalGridLines, VerticalBarSeries, VerticalGr
 import { db } from '../firebase';
 import "react-vis/dist/style.css";
 import * as math from 'mathjs';
-import { Button, Col, Row } from 'react-bootstrap';
+import { Button, Col, Row, Table } from 'react-bootstrap';
 
 // displays the a team's data (team and regional are passed in through link and router stuff)
 function TeamData({match}) {
@@ -111,14 +111,14 @@ function TeamData({match}) {
 
                     if(matches.length) {
                         setAutonData({
-                            min : [{y: 115, x: math.min(autonBalls)}],
-                            mean : [{y: 115, x: math.mean(autonBalls) - math.min(autonBalls)}],
-                            max : [{y: 115, x: math.max(autonBalls) - math.mean(autonBalls)}],
+                            min : [{y: team, x: math.min(autonBalls)}],
+                            mean : [{y: team, x: math.mean(autonBalls) - math.min(autonBalls)}],
+                            max : [{y: team, x: math.max(autonBalls) - math.mean(autonBalls)}],
                         })
                         setTeleopData({
-                            min : [{y: 115, x: math.min(teleopBalls)}],
-                            mean : [{y: 115, x: math.mean(teleopBalls) - math.min(teleopBalls)}],
-                            max : [{y: 115, x: math.max(teleopBalls) - math.mean(teleopBalls)}],
+                            min : [{y: team, x: math.min(teleopBalls)}],
+                            mean : [{y: team, x: math.mean(teleopBalls) - math.min(teleopBalls)}],
+                            max : [{y: team, x: math.max(teleopBalls) - math.mean(teleopBalls)}],
                         })
                     }
                 }
@@ -147,19 +147,20 @@ function TeamData({match}) {
                 {matches.length > 1 ? <Row>
                     {/* Teleop vs Auton points per game bar chart */}
                     <Col>
-                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100} onMouseLeave={() => {setCrosshairG1([])}}>
+                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100} stackBy="y" onMouseLeave={() => {setCrosshairG1([])}}>
                             <DiscreteColorLegend
                                 style={{position: 'absolute', left: '50px', top: '10px'}}
                                 orientation="vertical"
                                 items={[
-                                {
-                                    title: 'Teleop Points',
-                                    color: '#7300b5'
-                                },
-                                {
-                                    title: 'Auton Points',
-                                    color: '#fcba03'
-                                }
+                                    {
+                                        title: 'Auton Points',
+                                        color: '#fcba03'
+                                    },
+                                    {
+                                        title: 'Teleop Points',
+                                        color: '#7300b5'
+                                    },
+                                    
                                 ]}
                             />
                             <VerticalGridLines />
@@ -174,8 +175,8 @@ function TeamData({match}) {
                             <YAxis title="Points"/>
                             <Crosshair 
                                 values={crosshairG1} 
-                                titleFormat={(d) => ({title: "Match Num", value: d[0].x})} 
-                                itemsFormat={(d) => ([{ title: "auton points", value: d[0].y }, { title: "teleop points", value: d[1].y }])}
+                                titleFormat={(d) => ({title: "Match", value: d[0].x})} 
+                                itemsFormat={(d) => ([{ title: "Auton points", value: d[0].y }, { title: "Teleop points", value: d[1].y }])}
                             />
                         </XYPlot>
                     </Col>
@@ -185,31 +186,31 @@ function TeamData({match}) {
                             <VerticalGridLines />
                             <HorizontalGridLines />
                             <HorizontalBarSeries 
-                                data={autonData.min} 
+                                data={teleopData.min} 
                                 color="#a200ff" 
                                 onNearestX={(value) => {setCrosshairG2([{value}])} } 
                             />
                             <HorizontalBarSeries 
-                                data={autonData.mean} 
+                                data={teleopData.mean} 
                                 color="#8b00db" 
                                 onNearestX={(value) => {setCrosshairG2([{value}])} }
                             />
                             <HorizontalBarSeries 
-                                data={autonData.max} 
+                                data={teleopData.max} 
                                 color="#7300b5" 
                                 onNearestX={(value) => {setCrosshairG2([{value}])} } 
                                 
                             />
-                            <XAxis title="Points scored in auton" />
+                            <XAxis title="Points scored in teleop" />
                             <YAxis />
                             <Crosshair 
                                 values={crosshairG2}
                                 titleFormat={() => ({title: "Team", value: team})}
                                 itemsFormat={() => {
                                     return [
-                                        {title: "Min", value: autonData.min[0].x + " balls scored"},
-                                        {title: "Mean", value: autonData.mean[0].x + autonData.min[0].x + " balls scored"},
-                                        {title: "Max", value: autonData.max[0].x + autonData.mean[0].x + autonData.min[0].x + " balls scored"},
+                                        {title: "Min", value: teleopData.min[0].x + " balls scored"},
+                                        {title: "Mean", value: teleopData.mean[0].x + teleopData.min[0].x + " balls scored"},
+                                        {title: "Max", value: teleopData.max[0].x + teleopData.mean[0].x + teleopData.min[0].x + " balls scored"},
                                     ]
                                 }}
                             />
@@ -221,31 +222,31 @@ function TeamData({match}) {
                             <VerticalGridLines />
                             <HorizontalGridLines />
                             <HorizontalBarSeries 
-                                data={teleopData.min} 
+                                data={autonData.min} 
                                 color="#ffd45e" 
                                 onNearestX={(value) => {setCrosshairG3([{value}])} } 
                             />
                             <HorizontalBarSeries 
-                                data={teleopData.mean} 
+                                data={autonData.mean} 
                                 color="#ffc933" 
                                 onNearestX={(value) => {setCrosshairG3([{value}])} }
                             />
                             <HorizontalBarSeries 
-                                data={teleopData.max} 
+                                data={autonData.max} 
                                 color="#fcba03" 
                                 onNearestX={(value) => {setCrosshairG3([{value}])} } 
                                 
                             />
-                            <XAxis title="Points scored in teleop" />
+                            <XAxis title="Points scored in auton" />
                             <YAxis />
                             <Crosshair 
                                 values={crosshairG3}
                                 titleFormat={() => ({title: "Team", value: team})}
                                 itemsFormat={() => {
                                     return [
-                                        {title: "Min", value: teleopData.min[0].x + " balls scored"},
-                                        {title: "Mean", value: teleopData.mean[0].x + teleopData.min[0].x + " balls scored"},
-                                        {title: "Max", value: teleopData.max[0].x + teleopData.mean[0].x + teleopData.min[0].x + " balls scored"},
+                                        {title: "Min", value: autonData.min[0].x + " balls scored"},
+                                        {title: "Mean", value: autonData.mean[0].x + autonData.min[0].x + " balls scored"},
+                                        {title: "Max", value: autonData.max[0].x + autonData.mean[0].x + autonData.min[0].x + " balls scored"},
                                     ]
                                 }}
                             />
@@ -276,7 +277,7 @@ function TeamData({match}) {
                             <Crosshair 
                                 values={crosshairG4} 
                                 itemsFormat={(d) => ([{ title: "points", value: d[0].y }])}
-                                titleFormat={(d) => ({ title: "Match Num", value: d[0].x })}
+                                titleFormat={(d) => ({ title: "Match", value: d[0].x })}
                             />
                         </XYPlot>
                     </Col>
@@ -300,6 +301,25 @@ function TeamData({match}) {
                             height={300}
                             
                         />
+                    </Col>
+                    <Col>
+                        <Table>
+                            <thead>
+                                <tr>
+                                    <th>Match #</th>
+                                    <th>Climb ?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {matches.map(match => (
+                                    <tr key={match.data.matchNum}>
+                                        <td>{match.data.matchNum}</td>
+                                        <td>{!match.data.attemptHang ? "Did not attempt" : match.data.hangFail ? "Fail" : "Success"}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            
+                        </Table>
                     </Col>
                 </Row>: (<><h1>There are no mathes played by this team or this team did not play this match</h1></>)}
             </>}
