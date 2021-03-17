@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { DiscreteColorLegend, HorizontalGridLines, VerticalBarSeries, VerticalGridLines, XAxis, XYPlot, YAxis, RadialChart, Crosshair, HorizontalBarSeries } from 'react-vis';
+import { DiscreteColorLegend, HorizontalGridLines, VerticalBarSeries, VerticalGridLines, XAxis, XYPlot, YAxis, RadialChart, Crosshair, HorizontalBarSeries, LabelSeries } from 'react-vis';
 import { db } from '../firebase';
 import "react-vis/dist/style.css";
 import * as math from 'mathjs';
@@ -47,86 +47,86 @@ function TeamData({match}) {
         (data.teleopBottom) + (data.teleopUpper * 2) + (data.teleopInner * 3)
     }
 
-    
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            // if a match is selected get the data from this teams performance in that match from firebase
+            if(matchNum) {
+                const matchRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").doc(matchNum).get();
+                setMatches([matchRef.data()]);
+            // otherwise get all team dataa
+            } else {
+                // get all matches that the team has played from firebase
+                const teamRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").get()
+                
+                // temporary variables that will be used to set state
+                let auton = [];
+                let teleop = [];
+                let autonBalls = [];
+                let teleopBalls = [];
+                let climbFailsNum = 0;
+                let climbSucessNum = 0;
+                let didNotAttemptsNum = 0;
+                let pointsData = [];
+
+                setMatches(teamRef.docs.map((doc, index) => {
+                    if(!doc.exists) 
+                        return {}
+                    // updating data based on each match
+                    auton = [...auton, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "auton")}];
+                    teleop = [...teleop, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "teleop")}];
+                    autonBalls = [...autonBalls, doc.data().data.autonInner + doc.data().data.autonUpper + doc.data().data.autonBottom];
+                    teleopBalls = [...teleopBalls, doc.data().data.teleopInner + doc.data().data.teleopUpper + doc.data().data.teleopBottom];
+                    pointsData = [...pointsData, {x: doc.data().data.matchNum, y: auton[index].y + teleop[index].y}];
+
+                    if(!doc.data().data.attemptHang){
+                        didNotAttemptsNum++;
+                    }
+                    
+                    if(doc.data().data.attemptHang){
+                        if(doc.data().data.hangFail){
+                            climbFailsNum++;
+                        }
+                        else {
+                            climbSucessNum++;
+                        }
+                    }
+
+                    return doc.data();
+                }))
+
+                // changing the state of different things
+                setDataG1Auton(auton);
+                setDataG1Teleop(teleop);
+                setPoints(pointsData);
+                setPieChartData([
+                    {angle: climbFailsNum, label: climbFailsNum > 0 ? "Failed to Climb" : "", color: "#fcba03"}, 
+                    {angle: climbSucessNum, label: climbSucessNum > 0 ? "Climb Successes" : "", color: "#7300b5"}, 
+                    {angle: didNotAttemptsNum, label: didNotAttemptsNum > 0 ? "Did not attempt" : "", color: "#A7A6BA"}
+                ]);
+
+                if(matches.length) {
+                    setAutonData({
+                        min : [{y: team, x: math.min(autonBalls)}],
+                        mean : [{y: team, x: math.mean(autonBalls) - math.min(autonBalls)}],
+                        max : [{y: team, x: math.max(autonBalls) - math.mean(autonBalls)}],
+                    })
+                    setTeleopData({
+                        min : [{y: team, x: math.min(teleopBalls)}],
+                        mean : [{y: team, x: math.mean(teleopBalls) - math.min(teleopBalls)}],
+                        max : [{y: team, x: math.max(teleopBalls) - math.mean(teleopBalls)}],
+                    })
+                }
+            }
+        } catch(e) {
+            console.log(e);
+        }
+        setLoading(false);
+    }
     
 
     // called when team/regional/match changes and when page starts up
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // if a match is selected get the data from this teams performance in that match from firebase
-                if(matchNum) {
-                    const matchRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").doc(matchNum).get();
-                    setMatches([matchRef.data()]);
-                // otherwise get all team dataa
-                } else {
-                    // get all matches that the team has played from firebase
-                    const teamRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").get()
-                    
-                    // temporary variables that will be used to set state
-                    let auton = [];
-                    let teleop = [];
-                    let autonBalls = [];
-                    let teleopBalls = [];
-                    let climbFailsNum = 0;
-                    let climbSucessNum = 0;
-                    let didNotAttemptsNum = 0;
-                    let pointsData = [];
-
-                    setMatches(teamRef.docs.map((doc, index) => {
-                        if(!doc.exists) 
-                            return {}
-                        // updating data based on each match
-                        auton = [...auton, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "auton")}];
-                        teleop = [...teleop, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "teleop")}];
-                        autonBalls = [...autonBalls, doc.data().data.autonInner + doc.data().data.autonUpper + doc.data().data.autonBottom];
-                        teleopBalls = [...teleopBalls, doc.data().data.teleopInner + doc.data().data.teleopUpper + doc.data().data.teleopBottom];
-                        pointsData = [...pointsData, {x: doc.data().data.matchNum, y: auton[index].y + teleop[index].y}];
-
-                        if(!doc.data().data.attemptHang){
-                            didNotAttemptsNum++;
-                        }
-                        
-                        if(doc.data().data.attemptHang){
-                            if(doc.data().data.hangFail){
-                                climbFailsNum++;
-                            }
-                            else {
-                                climbSucessNum++;
-                            }
-                        }
-
-                        return doc.data();
-                    }))
-
-                    // changing the state of different things
-                    setDataG1Auton(auton);
-                    setDataG1Teleop(teleop);
-                    setPoints(pointsData);
-                    setPieChartData([
-                        {angle: climbFailsNum, label: climbFailsNum > 0 ? "Failed to Climb" : "", color: "#fcba03"}, 
-                        {angle: climbSucessNum, label: climbSucessNum > 0 ? "Climb Successes" : "", color: "#ffd769"}, 
-                        {angle: didNotAttemptsNum, label: didNotAttemptsNum > 0 ? "Did not attempt" : "", color: "#a849de"}
-                    ]);
-
-                    if(matches.length) {
-                        setAutonData({
-                            min : [{y: team, x: math.min(autonBalls)}],
-                            mean : [{y: team, x: math.mean(autonBalls) - math.min(autonBalls)}],
-                            max : [{y: team, x: math.max(autonBalls) - math.mean(autonBalls)}],
-                        })
-                        setTeleopData({
-                            min : [{y: team, x: math.min(teleopBalls)}],
-                            mean : [{y: team, x: math.mean(teleopBalls) - math.min(teleopBalls)}],
-                            max : [{y: team, x: math.max(teleopBalls) - math.mean(teleopBalls)}],
-                        })
-                    }
-                }
-            } catch(e) {
-                console.log(e);
-            }
-            setLoading(false);
-        }
         fetchData();
     }, [matchNum, regional, team, matches.length]);
 
@@ -140,6 +140,9 @@ function TeamData({match}) {
                     <Link to={"/regional/" + regional}> {regional}</Link> / 
                     {matchNum ? <><Link to={"/teams/" + regional + "/" + team}> Team # {team}</Link> / Match # {matchNum} </> : <> Team # {team}</>}
                 </h3>
+                <Button onClick={fetchData}>
+                    Refresh Data
+                </Button>
             </div>
             {/* once loaded show the data */}
             {!loading && 
@@ -147,7 +150,7 @@ function TeamData({match}) {
                 {matches.length > 1 ? <Row>
                     {/* Teleop vs Auton points per game bar chart */}
                     <Col>
-                        <XYPlot xType="ordinal" width={300} height={350} xDistance={100} stackBy="y" onMouseLeave={() => {setCrosshairG1([])}}>
+                        <XYPlot xType="ordinal" width={1200} height={400} xDistance={100} stackBy="y" onMouseLeave={() => {setCrosshairG1([])}}>
                             <DiscreteColorLegend
                                 style={{position: 'absolute', left: '50px', top: '10px'}}
                                 orientation="vertical"
@@ -182,7 +185,7 @@ function TeamData({match}) {
                     </Col>
                     {/* Auton min, median, max graph */}
                     <Col>
-                        <XYPlot yType="ordinal" width={300} height={350} xDistance={100} stackBy="x" onMouseLeave={() => setCrosshairG2([])}>
+                        <XYPlot yType="ordinal" width={1200} height={200} xDistance={100} stackBy="x" onMouseLeave={() => setCrosshairG2([])}>
                             <VerticalGridLines />
                             <HorizontalGridLines />
                             <HorizontalBarSeries 
@@ -201,6 +204,15 @@ function TeamData({match}) {
                                 onNearestX={(value) => {setCrosshairG2([{value}])} } 
                                 
                             />
+
+                            {teleopData.min && teleopData.min.length > 0 && <LabelSeries
+                                data={[
+                                    {x: teleopData.min[0].x, y: 115, label: "Min: "},
+                                    {x: teleopData.mean[0].x, y: 115, label: "Mean: "},
+                                    {x: teleopData.max[0].x, y: 115, label: "Max: "},
+                                ]}
+                                getLabel={d => d.label + (Math.round(d.x * 100) / 100) + " balls"}
+                            />}
                             <XAxis title="Points scored in teleop" />
                             <YAxis />
                             <Crosshair 
@@ -208,7 +220,7 @@ function TeamData({match}) {
                                 titleFormat={() => ({title: "Team", value: team})}
                                 itemsFormat={() => {
                                     return [
-                                        {title: "Min", value: teleopData.min[0].x + " balls scored"},
+                                        {title: "Min", value: teleopData.min[0].x  + " balls scored"},
                                         {title: "Mean", value: teleopData.mean[0].x + teleopData.min[0].x + " balls scored"},
                                         {title: "Max", value: teleopData.max[0].x + teleopData.mean[0].x + teleopData.min[0].x + " balls scored"},
                                     ]
@@ -218,7 +230,7 @@ function TeamData({match}) {
                     </Col>
                     {/* Teleop min, median, max graph */}
                     <Col>
-                    <XYPlot yType="ordinal" width={300} height={350} xDistance={100} stackBy="x" onMouseLeave={() => setCrosshairG3([])}>
+                    <XYPlot yType="ordinal" width={1200} height={200} xDistance={100} stackBy="x" onMouseLeave={() => setCrosshairG3([])}>
                             <VerticalGridLines />
                             <HorizontalGridLines />
                             <HorizontalBarSeries 
@@ -237,6 +249,14 @@ function TeamData({match}) {
                                 onNearestX={(value) => {setCrosshairG3([{value}])} } 
                                 
                             />
+                            {autonData.min && autonData.min.length > 0 && <LabelSeries
+                                data={[
+                                    {x: autonData.min[0].x, y: 115, label: "Min: "},
+                                    {x: autonData.mean[0].x, y: 115, label: "Mean: "},
+                                    {x: autonData.max[0].x, y: 115, label: "Max: "},
+                                ]}
+                                getLabel={d => d.label + (Math.round(d.x * 100) / 100) + " balls"}
+                            />}
                             <XAxis title="Points scored in auton" />
                             <YAxis />
                             <Crosshair 
