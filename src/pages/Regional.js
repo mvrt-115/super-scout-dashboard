@@ -18,69 +18,37 @@ const Regional = ({ match }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // fetch matches
-                const matchRef = await db.collection("regional").doc(regional).collection("matches").get();
-                const teamRef = await db.collection("regional").doc(regional).collection("teams").get();
-                let teams = {};
+                const matchesRef = await db.collection("regional").doc(regional).collection("matches").get();
+                const teamsRef = await db.collection("regional").doc(regional).collection("teams").get();
                 
-                //loop through each team id
-                teamRef.docs.forEach(async (doc) => {
+                let teams = teamsRef.docs.map(doc => doc.id);
+                let regionalData = {};
 
-                    
+                teams.forEach(async team => {
+                    const teamRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").get();
+                    const teamData = teamRef.docs.map(doc => doc.data());
 
-                    //get all matches from one team
-                    const allTeamMatches = await db.collection("regional").doc(regional).collection("teams").doc(doc.id).collection("matches").get();
-                    
-                    //add all matches from team to doc
-                    let matchArr = allTeamMatches.docs.map(doc => (doc.data().data));
+                    regionalData[team] = {}
 
-                    Object.keys(matchArr[0]).forEach((key) => {
-                        if(typeOf(matchArr[0][key]) === 'number') {
-                            const ofKey = matchArr.map(match => match[key]);
-                            console.log(ofKey)
-                            try{
-                                teams[doc.id][key] = {
-                                    min: math.min(ofKey),
-                                    max: math.max(ofKey),
-                                    median: math.median(ofKey),
-                                    mean: math.mean(ofKey),
-                                }
-                            } catch (e) {
-                                console.log(e);
-                            }
+                    Object.keys(teamData[0].data).forEach(key => {
+                        if(Number.isSafeInteger(teamData[0].data[key]) && key!== 'scout_id') {
+                            const arr = teamData.map(team => team.data[key]);
+
+                            regionalData[team][key] = {
+                                min: math.min(arr),
+                                mean: math.mean(arr),
+                                median: math.median(arr),
+                                max: math.max(arr),
+                            };
                         }
 
                     })
                 })
 
-                console.log(teams);
+                console.log(regionalData);
 
-                let matchesArr = matchRef.docs.map(doc => {
-                    console.log("doc", doc.data())
-                    return ({data: doc.data(), id: doc.id})
-                });
-                setMatches(matchRef.docs.map(doc => doc.id));
-               
-                let teamsArr = teamRef.docs.map(doc => ({data: doc.data(), id: doc.id}));
-                console.log("teams data", teamsArr);
-                setTeams(teamRef.docs.map(doc => doc.id));
-
-                // regionalData = {
-                //     115: {
-                //         cycles: {
-                //             low: 5,
-                //              mean: 9,
-                //              medium: 10,
-                //              high: 20,
-                //         },
-                //         autonBottom: { ...},
-                //     }
-                // }
-                
-                setRegionalData({
-                    teams: teams,
-                    matches: matches
-                })
+                setMatches(matchesRef.docs.map(doc => doc.id));
+                setTeams(teams);
 
                 
             } catch (e) {
@@ -115,14 +83,14 @@ const Regional = ({ match }) => {
                     {/* Display matches */}
                     <h3>Matches:</h3>
                     <ul>
-                        {matches.map(match => <li className = "link" ><Link to={`/regional/${regional}/match/${match}`}>{match}</Link></li>)}
+                        {matches.map(match => <li className = "link" key={match}><Link to={`/regional/${regional}/match/${match}`}>{match}</Link></li>)}
                     </ul>
                 </Col>
                 <Col>
                     {/* Display teams */}
                     <h3>Teams:</h3>
                     <ul>
-                        {teams.map(team => <li className = "link" ><Link to={`/teams/${regional}/${team}`}>{team}</Link></li>)}
+                        {teams.map(team => <li className = "link" key={team}><Link to={`/teams/${regional}/${team}`}>{team}</Link></li>)}
                     </ul>
                 </Col>
             </Row>
