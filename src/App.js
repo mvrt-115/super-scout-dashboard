@@ -9,6 +9,7 @@ import '../node_modules/react-vis/dist/style.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navigation from './pages/Navigation';
 import { Container } from 'react-bootstrap';
+import RegionalStats from './pages/RegionalStats';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route exact path="/regional/:regional/match/:match" component={Match} />
             <Route exact path="/teams/:regional/:team/:match" component={TeamData} />
             <Route exact path="/teams/:regional/:team/" component={TeamData} />
+            <Route exact path="/regional/:regional/stats" component={RegionalStats} />
           </Switch>
       </Container>
     </Router>

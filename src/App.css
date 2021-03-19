@@ -57,10 +57,10 @@ ul {
     background-color: #7300b5;
     border: none;
 }
-.btn:hover {
+.btn:hover, .dropdown-toggle:hover {
     background-color: #64029c;
 }
-.btn:disabled {
+.btn:disabled, .dropdown-toggle:disabled {
     background-color: #7300b5;
 }
 .btn:focus {

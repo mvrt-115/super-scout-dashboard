@@ -8,15 +8,20 @@ function Home() {
   
   useEffect(() => {
     const fetchData = async () => {
+      console.log("=========LOADING DATA=========");
       // fetch regional data
       try {
         const regionalRequest = await db.collection('regional').get();
         setRegionals(regionalRequest.docs.map(doc => doc.id));
+
+        console.log("Regionals Array", regionalRequest.docs.map(doc => doc.id));
+        console.log("=========DATA LOADED=========");
       } catch (e) {
         console.log(e);
       }
     };
-    fetchData();
+    console.log("=========IN HOME USE EFFECT=========");
+    fetchData().then(() => console.log("=========OUT OF HOME USE EFFECT"));
   }, []);
 
   return (

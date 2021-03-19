@@ -1,64 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import * as math from 'mathjs';
 import { db } from '../firebase';
-import { typeOf } from 'mathjs';
 
 // displays matches and teams in a given regional
 const Regional = ({ match }) => {
     const regional = match.params.regional;
     const [matches, setMatches] = useState([]);
     const [teams, setTeams] = useState([]);
-    const [teamData, setTeamData] = useState({});
-    const [regionalData, setRegionalData] = useState({})
-
-    const [refreshLoading, setRefreshLoading] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                console.log("=========LOADING DATA=========");
                 const matchesRef = await db.collection("regional").doc(regional).collection("matches").get();
                 const teamsRef = await db.collection("regional").doc(regional).collection("teams").get();
-                
+             
                 let teams = teamsRef.docs.map(doc => doc.id);
-                let regionalData = {};
-
-                teams.forEach(async team => {
-                    const teamRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").get();
-                    const teamData = teamRef.docs.map(doc => doc.data());
-
-                    regionalData[team] = {}
-
-                    Object.keys(teamData[0].data).forEach(key => {
-                        if(Number.isSafeInteger(teamData[0].data[key]) && key!== 'scout_id') {
-                            const arr = teamData.map(team => team.data[key]);
-
-                            regionalData[team][key] = {
-                                min: math.min(arr),
-                                mean: math.mean(arr),
-                                median: math.median(arr),
-                                max: math.max(arr),
-                            };
-                        }
-
-                    })
-                })
-
-                console.log(regionalData);
-
-                setMatches(matchesRef.docs.map(doc => doc.id));
-                setTeams(teams);
-
+                let matches = matchesRef.docs.map(doc => doc.id);
                 
+                console.log("Teams at Regional Array", teams);
+                console.log("Matches at Regional Array", matches);
+                console.log("=========DATA LOADED=========")
+    
+                setMatches(matches);
+                setTeams(teams);
             } catch (e) {
                 console.log(e);
             }
-            setRefreshLoading(false);
         }
-        fetchData();
-    }, [regional, refreshLoading])
-
+        console.log("=========IN REGIONAL DATA USE EFFECT=========");
+        fetchData().then(() => console.log("=========OUT OF REGIONAL DATA USE EFFECT========="));        
+    }, [regional])
     return (
         <>
             {/* Breadcrumbs */}
@@ -68,14 +41,13 @@ const Regional = ({ match }) => {
             <Row>
 
                 <Button
-                    variant="primary"
-                    disabled={refreshLoading}
-                    onClick={!refreshLoading ? () => {setRefreshLoading(true)} : null}
                     size="lg"
                     block
                     className="my-2 mx-3"
+                    as={Link}
+                    to={"/regional/" + regional + "/stats"}
                 >
-                    {refreshLoading ? 'Loading…' : 'Refresh Data'}
+                    View Regional Stats
                 </Button>
                 </Row>
             <Row>

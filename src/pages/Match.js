@@ -15,19 +15,29 @@ const Match = ({ match }) => {
     useEffect(() => {
         const fetchData = async () => {
             // fetch and set data from each alliance
+            console.log("=========LOADING DATA=========");
             try {                
                 const redRef = await db.collection("regional").doc(regional).collection("matches").doc(matchNum).collection("red").get();
                 const blueRef = await db.collection("regional").doc(regional).collection("matches").doc(matchNum).collection("blue").get();
                 
-                if(redRef !== null)
+                if(redRef !== null) {
                     setRedData(redRef.docs.map(doc => doc.data()));
-                if(blueRef !== null)
+                    console.log("Red Alliance Array", redRef.docs.map(doc => ({...doc.data(), id: doc.id})));
+                }
+                    
+                if(blueRef !== null) {
                     setBlueData(blueRef.docs.map(doc => ({...doc.data(), id: doc.id})));
+                    console.log("Blue Alliance Array", blueRef.docs.map(doc => ({...doc.data(), id: doc.id})));
+                }
+                    
+                console.log("=========DATA LOADED=========");
+                
             } catch(e) {
                 console.log(e);
             }
         }
-        fetchData();
+        console.log("=========IN MATCH USE EFFECT=========");
+        fetchData().then("=========OUT OF MATCH USE EFFECT=========");
     }, [matchNum, regional]);
 
     return (

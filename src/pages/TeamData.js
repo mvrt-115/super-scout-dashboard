@@ -21,6 +21,7 @@ function TeamData({match}) {
 
     // showing graphs state
     const [showRawData, setShowRawData] = useState(false);
+    const [dependency, setDependency] = useState(0);
 
     // auton and teleop data for the first graph
     const [dataG1Auton, setDataG1Auton] = useState([]);
@@ -37,7 +38,6 @@ function TeamData({match}) {
     const [points, setPoints] = useState([]);
     const [crosshairG4, setCrosshairG4] = useState([]);
 
-
     // Radial chart data to keep track of climb fails and successes
     const [pieChartData, setPieChartData] = useState([])
 
@@ -47,88 +47,95 @@ function TeamData({match}) {
         (data.teleopBottom) + (data.teleopUpper * 2) + (data.teleopInner * 3)
     }
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            // if a match is selected get the data from this teams performance in that match from firebase
-            if(matchNum) {
-                const matchRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").doc(matchNum).get();
-                setMatches([matchRef.data()]);
-            // otherwise get all team dataa
-            } else {
-                // get all matches that the team has played from firebase
-                const teamRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").get()
-                
-                // temporary variables that will be used to set state
-                let auton = [];
-                let teleop = [];
-                let autonBalls = [];
-                let teleopBalls = [];
-                let climbFailsNum = 0;
-                let climbSucessNum = 0;
-                let didNotAttemptsNum = 0;
-                let pointsData = [];
-
-                setMatches(teamRef.docs.map((doc, index) => {
-                    if(!doc.exists) 
-                        return {}
-                    // updating data based on each match
-                    auton = [...auton, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "auton")}];
-                    teleop = [...teleop, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "teleop")}];
-                    autonBalls = [...autonBalls, doc.data().data.autonInner + doc.data().data.autonUpper + doc.data().data.autonBottom];
-                    teleopBalls = [...teleopBalls, doc.data().data.teleopInner + doc.data().data.teleopUpper + doc.data().data.teleopBottom];
-                    pointsData = [...pointsData, {x: doc.data().data.matchNum, y: auton[index].y + teleop[index].y}];
-
-                    if(!doc.data().data.attemptHang){
-                        didNotAttemptsNum++;
-                    }
-                    
-                    if(doc.data().data.attemptHang){
-                        if(doc.data().data.hangFail){
-                            climbFailsNum++;
-                        }
-                        else {
-                            climbSucessNum++;
-                        }
-                    }
-
-                    return doc.data();
-                }))
-
-                // changing the state of different things
-                setDataG1Auton(auton);
-                setDataG1Teleop(teleop);
-                setPoints(pointsData);
-                setPieChartData([
-                    {angle: climbFailsNum, label: climbFailsNum > 0 ? "Failed to Climb" : "", color: "#fcba03"}, 
-                    {angle: climbSucessNum, label: climbSucessNum > 0 ? "Climb Successes" : "", color: "#7300b5"}, 
-                    {angle: didNotAttemptsNum, label: didNotAttemptsNum > 0 ? "Did not attempt" : "", color: "#A7A6BA"}
-                ]);
-
-                if(matches.length) {
-                    setAutonData({
-                        min : [{y: team, x: math.min(autonBalls)}],
-                        mean : [{y: team, x: math.mean(autonBalls) - math.min(autonBalls)}],
-                        max : [{y: team, x: math.max(autonBalls) - math.mean(autonBalls)}],
-                    })
-                    setTeleopData({
-                        min : [{y: team, x: math.min(teleopBalls)}],
-                        mean : [{y: team, x: math.mean(teleopBalls) - math.min(teleopBalls)}],
-                        max : [{y: team, x: math.max(teleopBalls) - math.mean(teleopBalls)}],
-                    })
-                }
-            }
-        } catch(e) {
-            console.log(e);
-        }
-        setLoading(false);
-    }
+    
     
 
     // called when team/regional/match changes and when page starts up
     useEffect(() => {
-        fetchData();
-    }, [matchNum, regional, team, matches.length]);
+        const fetchData = async () => {
+            setLoading(true);
+            console.log("=========LOADING DATA=========");
+            try {
+                // if a match is selected get the data from this teams performance in that match from firebase
+                if(matchNum) {
+                    const matchRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").doc(matchNum).get();
+                    setMatches([matchRef.data()]);
+                // otherwise get all team dataa
+                } else {
+                    // get all matches that the team has played from firebase
+                    const teamRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").get()
+                    
+                    // temporary variables that will be used to set state
+                    let auton = [];
+                    let teleop = [];
+                    let autonBalls = [];
+                    let teleopBalls = [];
+                    let climbFailsNum = 0;
+                    let climbSucessNum = 0;
+                    let didNotAttemptsNum = 0;
+                    let pointsData = [];
+
+                    let matches = teamRef.docs.map((doc, index) => {
+                        if(!doc.exists) 
+                            return {}
+                        // updating data based on each match
+                        auton = [...auton, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "auton")}];
+                        teleop = [...teleop, {x: doc.data().data.matchNum, y: totalPoints(doc.data().data, "teleop")}];
+                        autonBalls = [...autonBalls, doc.data().data.autonInner + doc.data().data.autonUpper + doc.data().data.autonBottom];
+                        teleopBalls = [...teleopBalls, doc.data().data.teleopInner + doc.data().data.teleopUpper + doc.data().data.teleopBottom];
+                        pointsData = [...pointsData, {x: doc.data().data.matchNum, y: auton[index].y + teleop[index].y}];
+
+                        if(!doc.data().data.attemptHang){
+                            didNotAttemptsNum++;
+                        }
+                        
+                        if(doc.data().data.attemptHang){
+                            if(doc.data().data.hangFail){
+                                climbFailsNum++;
+                            }
+                            else {
+                                climbSucessNum++;
+                            }
+                        }
+
+                        return doc.data();
+                    })
+                    setMatches("Matches that the team has played", matches);
+
+                    // changing the state of different things
+                    setDataG1Auton(auton);
+                    setDataG1Teleop(teleop);
+                    setPoints(pointsData);
+                    setPieChartData([
+                        {angle: climbFailsNum, label: climbFailsNum > 0 ? "Failed to Climb" : "", color: "#fcba03"}, 
+                        {angle: climbSucessNum, label: climbSucessNum > 0 ? "Climb Successes" : "", color: "#7300b5"}, 
+                        {angle: didNotAttemptsNum, label: didNotAttemptsNum > 0 ? "Did not attempt" : "", color: "#A7A6BA"}
+                    ]);
+
+                    if(matches.length) {
+                        setAutonData({
+                            min : [{y: team, x: math.min(autonBalls)}],
+                            mean : [{y: team, x: math.mean(autonBalls) - math.min(autonBalls)}],
+                            max : [{y: team, x: math.max(autonBalls) - math.mean(autonBalls)}],
+                        })
+                        setTeleopData({
+                            min : [{y: team, x: math.min(teleopBalls)}],
+                            mean : [{y: team, x: math.mean(teleopBalls) - math.min(teleopBalls)}],
+                            max : [{y: team, x: math.max(teleopBalls) - math.mean(teleopBalls)}],
+                        })
+                    }
+                    console.log(matches);
+                    console.log("=========DATA LOADED=========");
+                }
+            } catch(e) {
+                console.log(e);
+            }
+            setLoading(false);
+        }
+        const getData = () => fetchData();
+        console.log("=========IN TEAM DATA USE EFFECT=========");
+        getData().then(() => console.log("=========OUT OF TEAM DATA USE EFFECT========="));
+    }, [matchNum, regional, team, matches.length, dependency]);
 
 
     return (
@@ -140,7 +147,7 @@ function TeamData({match}) {
                     <Link to={"/regional/" + regional}> {regional}</Link> / 
                     {matchNum ? <><Link to={"/teams/" + regional + "/" + team}> Team # {team}</Link> / Match # {matchNum} </> : <> Team # {team}</>}
                 </h3>
-                <Button onClick={fetchData}>
+                <Button onClick={() => setDependency(dependency + 1)}>
                     Refresh Data
                 </Button>
             </div>

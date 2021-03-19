@@ -13,16 +13,20 @@ function Navigation() {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("=========LOADING DATA=========");
       try {
         const regionalRequest = await db.collection('regional').get();
         const regionals = regionalRequest.docs.map(doc => doc.id);
         setRegionals(regionals);
         setRegional(regionals[0])
+        console.log("Regionals Array",regionals);
+        console.log("=========DATA LOADED=========");
       } catch (e) {
         console.log(e);
       }
     };
-    fetchData();
+    console.log("=========IN NAV USE EFFECT=========");
+    fetchData().then(() => console.log("=========OUT OF NAV USE EFFECT========="));
   }, []);
 
   // when the user searches, redirect them to a team at a regional/team at a match at the regional
