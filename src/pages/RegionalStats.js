@@ -1,63 +1,58 @@
-import * as math from 'mathjs';
 import React, { useEffect, useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import { useRegionalData } from '../contexts/RegionalDataContext';
 import { db } from '../firebase';
+import {HorizontalGridLines, VerticalBarSeries, XAxis, XYPlot, YAxis } from 'react-vis';
+import * as math from 'mathjs';
+
 
 const RegionalStats = ({ match }) => {
-    const [regionals, setRegionals] = useState([]);
-    const [regionalData, setRegionalData] = useState({});
-    const [loading, setLoading] = useState(true);
     const regional = match.params.regional;
+    const {regionals, updateRegionals, updateRegionalData} = useRegionalData();
+    const [loading, setLoading] = useState(true);
+    const [totalPointsByTeam, setTotalPointsByTeam] = useState([]);
+    const history = useHistory(); 
+
+    
 
     useEffect(() => {
         const fetchData = async () => {
             console.log("=========LOADING DATA=========");
             try {
-                const teamsRef = await db.collection("regional").doc(regional).collection("teams").get();
                 
-                let teams = teamsRef.docs.map(doc => doc.id);
-                let regionalData = {};
+                let regionalData = await updateRegionalData(regional);
+                await updateRegionals();
+                
+                if(regionalData === {}){
+                    console.warn("Regional data is empty", regionalData);
+                    history.push("/");
+                }
+                const tpbt = Object.keys(regionalData).map((team) => ({
+                    y: math.sum(regionalData[team].autonBottom) * 2 + math.sum(regionalData[team].autonUpper) * 4 + math.sum(regionalData[team].autonInner) * 6
+                        + math.sum(regionalData[team].teleopBottom) + math.sum(regionalData[team].teleopUpper) * 2 + math.sum(regionalData[team].teleopInner) * 3,
+                    team: team                
+                }));
 
-                teams.forEach(async team => {
-                    const teamRef = await db.collection("regional").doc(regional).collection("teams").doc(team).collection("matches").get();
-                    const teamData = teamRef.docs.map(doc => doc.data());
+                tpbt.sort((a, b) => (a.y < b.y) ? 1 : -1);
 
-                    regionalData[team] = {}
-
-                    Object.keys(teamData[0].data).forEach(key => {
-                        if(Number.isSafeInteger(teamData[0].data[key]) && key!== 'scout_id') {
-                            const arr = teamData.map(team => team.data[key]);
-
-                            regionalData[team][key] = {
-                                min: math.min(arr),
-                                mean: math.mean(arr),
-                                median: math.median(arr),
-                                max: math.max(arr),
-                            };
-                        }
-
-                    })
-                })
-            
-                const regionalRequest = await db.collection('regional').get();
-                setRegionals(regionalRequest.docs.map(doc => doc.id));
-
-                console.log("Regionals Array", regionalRequest.docs.map(doc => doc.id));
-
-                console.log("Min, Mean, Median, Max Data for all teams at regional", regionalData);
-                setRegionalData(regionalData);                
-
+                tpbt.forEach((team, index) => team.x = index + 1)
+                
+                console.log("hii", tpbt);
+                setTotalPointsByTeam(tpbt);
                 console.log("=========DATA LOADED=========");
             } catch (e) {
                 console.log(e);
             }
         }
         console.log("=========IN REGIONAL STATS USE EFFECT=========");
-        fetchData().then();
-        
-    },[regional])
+        fetchData().then(() => { 
+            setLoading(false) 
+        });
+    },[regional, history])
 
+
+    
     return (
         <>
             <div>
@@ -68,9 +63,21 @@ const RegionalStats = ({ match }) => {
                     </Dropdown.Toggle>
 
                     <Dropdown.Menu>
-                        {regionals.map(reg => <Dropdown.Item as={Link} disabled={reg === regional} to={"/regional/" + reg + "/stats"}>{reg}</Dropdown.Item>)}
+                        {regionals.map(reg => <Dropdown.Item as={Link} disabled={reg === regional} to={"/regional/" + reg + "/stats"} key={reg}>{reg}</Dropdown.Item>)}
                     </Dropdown.Menu>
                 </Dropdown>
+            
+                                
+                {!loading && <XYPlot width={1500} height={600}>
+                    <HorizontalGridLines/>
+
+                    <VerticalBarSeries
+                        data={totalPointsByTeam}
+                        color="#fcba03"/>
+
+                    <XAxis title="Team #" tickFormat={(val, i) => totalPointsByTeam[i].team} tickValues={totalPointsByTeam.map(team => team.x)}/>
+                    <YAxis title="Points"/>
+                </XYPlot>}
             </div>
         </>
     )

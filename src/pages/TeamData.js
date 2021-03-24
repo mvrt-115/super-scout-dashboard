@@ -47,9 +47,6 @@ function TeamData({match}) {
         (data.teleopBottom) + (data.teleopUpper * 2) + (data.teleopInner * 3)
     }
 
-    
-    
-
     // called when team/regional/match changes and when page starts up
     useEffect(() => {
         const fetchData = async () => {
@@ -100,7 +97,7 @@ function TeamData({match}) {
 
                         return doc.data();
                     })
-                    setMatches("Matches that the team has played", matches);
+                    setMatches(matches);
 
                     // changing the state of different things
                     setDataG1Auton(auton);
@@ -124,7 +121,7 @@ function TeamData({match}) {
                             max : [{y: team, x: math.max(teleopBalls) - math.mean(teleopBalls)}],
                         })
                     }
-                    console.log(matches);
+                    console.log("Matches Array", matches);
                     console.log("=========DATA LOADED=========");
                 }
             } catch(e) {
@@ -338,7 +335,7 @@ function TeamData({match}) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {matches.map(match => (
+                                {matches && matches.map(match => (
                                     <tr key={match.data.matchNum}>
                                         <td>{match.data.matchNum}</td>
                                         <td>{!match.data.attemptHang ? "Did not attempt" : match.data.hangFail ? "Fail" : "Success"}</td>

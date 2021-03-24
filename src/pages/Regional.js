@@ -45,7 +45,7 @@ const Regional = ({ match }) => {
                     block
                     className="my-2 mx-3"
                     as={Link}
-                    to={"/regional/" + regional + "/stats"}
+                    to={"/compare-teams/" + regional}
                 >
                     View Regional Stats
                 </Button>
