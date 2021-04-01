@@ -17,7 +17,7 @@ import { db } from "../firebase";
 import "react-vis/dist/style.css";
 import * as math from "mathjs";
 import { Button, Col, Row, Table } from "react-bootstrap";
-import { Graphs } from "../components";
+import TeamGraphs from "../components/TeamGraphs";
 
 // displays the a team's data (team and regional are passed in through link and router stuff)
 function TeamData({ match }) {
@@ -42,8 +42,8 @@ function TeamData({ match }) {
   const [crosshairG1, setCrosshairG1] = useState([]);
 
   // auton and teleop data for min, median, max graphs
-  const [autonData, setAutonData] = useState({});
-  const [teleopData, setTeleopData] = useState([]);
+  const [autonBalls, setAutonBalls] = useState([]);
+  const [teleopBalls, setTeleopBalls] = useState([]);
   const [crosshairG2, setCrosshairG2] = useState([]);
   const [crosshairG3, setCrosshairG3] = useState([]);
 
@@ -175,24 +175,8 @@ function TeamData({ match }) {
           ]);
 
           if (matches.length) {
-            setAutonData({
-              min: [{ y: team, x: math.min(autonBalls) }],
-              mean: [
-                { y: team, x: math.mean(autonBalls) - math.min(autonBalls) },
-              ],
-              max: [
-                { y: team, x: math.max(autonBalls) - math.mean(autonBalls) },
-              ],
-            });
-            setTeleopData({
-              min: [{ y: team, x: math.min(teleopBalls) }],
-              mean: [
-                { y: team, x: math.mean(teleopBalls) - math.min(teleopBalls) },
-              ],
-              max: [
-                { y: team, x: math.max(teleopBalls) - math.mean(teleopBalls) },
-              ],
-            });
+            setAutonBalls(autonBalls);
+            setTeleopBalls(teleopBalls);
           }
           console.log("Matches Array", matches);
           console.log("=========DATA LOADED=========");
@@ -231,17 +215,19 @@ function TeamData({ match }) {
       </div>
       {/* once loaded show the data */}
       {!loading && (
-        <Graphs
+        <TeamGraphs
           data={{
-            autonData: autonData,
-            teleopData: teleopData,
             pieChartData: pieChartData,
-            dataG1Auton: dataG1Auton,
-            dataG1Teleop: dataG1Teleop,
+
             matches: matches,
             team: team,
             points: points,
           }}
+          autonBalls={autonBalls}
+          teleopBalls={teleopBalls}
+          team={team}
+          dataG1Auton={dataG1Auton}
+          dataG1Teleop={dataG1Teleop}
         />
       )}
       {/* displays match data from matches array */}
