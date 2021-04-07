@@ -3,9 +3,11 @@ import { Dropdown } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { useRegionalData } from "../contexts/RegionalDataContext";
 import {
+  Crosshair,
   HorizontalGridLines,
   MarkSeries,
   VerticalBarSeries,
+  VerticalGridLines,
   XAxis,
   XYPlot,
   YAxis,
@@ -19,6 +21,15 @@ const RegionalStats = ({ match }) => {
   const [totalPointsByTeam, setTotalPointsByTeam] = useState([]);
   const [avgAutonByTeam, setAvgAutonPointsByTeam] = useState([]);
   const [avgTeleopByTeam, setAvgTeleopPointsByTeam] = useState([]);
+  const [
+    autonTeleopEndGameMarkSeries,
+    setAutonTeleopEndGameMarkSeries,
+  ] = useState([]);
+
+  const [
+    autonTeleopEndGameMarkSeriesCrossHair,
+    setAutonTeleopEndGameMarkSeriesCrossHair,
+  ] = useState([]);
   const history = useHistory();
   const [lineData, setLineData] = useState([]);
 
@@ -66,6 +77,24 @@ const RegionalStats = ({ match }) => {
           x: index,
         }));
 
+        const teleopAndAutonMarkSeriesTemp = Object.keys(regionalData).map(
+          (team, index) => ({
+            x:
+              math.mean(regionalData[team].autonBottom) * 2 +
+              math.mean(regionalData[team].autonUpper) * 4 +
+              math.mean(regionalData[team].autonInner) * 6,
+
+            y:
+              math.mean(regionalData[team].teleopBottom) +
+              math.mean(regionalData[team].teleopUpper) * 2 +
+              math.mean(regionalData[team].teleopInner) * 3,
+
+            size: math.mean(regionalData[team].endgamePoints) / 1.5,
+            opacity: Math.random(),
+            team: team,
+          })
+        );
+
         const avgTeleop = Object.keys(regionalData).map((team, index) => ({
           y:
             math.sum(regionalData[team].teleopBottom) +
@@ -100,6 +129,7 @@ const RegionalStats = ({ match }) => {
 
         setAvgAutonPointsByTeam(avgAuton);
         setAvgTeleopPointsByTeam(avgTeleop);
+        setAutonTeleopEndGameMarkSeries(teleopAndAutonMarkSeriesTemp);
 
         setTotalPointsByTeam(tpbt);
         setLineData(lineData);
@@ -140,6 +170,9 @@ const RegionalStats = ({ match }) => {
 
         {!loading && (
           <>
+            <h4>
+              Total Points vs Team Number (sorted by most post points scored)
+            </h4>
             <XYPlot width={1500} height={600}>
               <HorizontalGridLines />
 
@@ -152,6 +185,10 @@ const RegionalStats = ({ match }) => {
               />
               <YAxis title="Points" />
             </XYPlot>
+            <h4>
+              Average Auton and Teleop Points vs Team Number (sorted by most
+              post points scored, purple is teleop, yellow is auton)
+            </h4>
             <XYPlot width={1500} height={600} stackBy="y">
               <HorizontalGridLines />
 
@@ -165,8 +202,10 @@ const RegionalStats = ({ match }) => {
               />
               <YAxis title="Points" />
             </XYPlot>
+            <h4>Average Points vs Team Rank</h4>
             <XYPlot width={1500} height={600} stackBy="y">
               <HorizontalGridLines />
+              <VerticalGridLines />
 
               <MarkSeries data={lineData} color="#fcba03" />
 
@@ -176,6 +215,38 @@ const RegionalStats = ({ match }) => {
                 tickValues={totalPointsByTeam.map((team) => team.x)}
               />
               <YAxis title="Points" />
+            </XYPlot>
+            <h4>
+              Average Teleop Points vs Average Auton Points (point size is
+              endgame points)
+            </h4>
+
+            <XYPlot width={1500} height={300}>
+              <MarkSeries
+                className="mark-series-example"
+                sizeRange={[2, 16]}
+                data={autonTeleopEndGameMarkSeries}
+                color="#fcba03"
+                onValueMouseOver={(datapoint, event) => {
+                  console.log(datapoint);
+                  setAutonTeleopEndGameMarkSeriesCrossHair([datapoint]);
+                }}
+                onValueMouseOut={() =>
+                  setAutonTeleopEndGameMarkSeriesCrossHair([])
+                }
+              />
+
+              <Crosshair
+                values={autonTeleopEndGameMarkSeriesCrossHair}
+                titleFormat={(d) => ({ title: "Team", value: d[0].team })}
+                itemsFormat={(d) => [
+                  { title: "Average Auton points", value: d[0].x },
+                  { title: "Average Teleop points", value: d[0].y },
+                  { title: "Average Endgame points", value: d[0].size * 1.5 },
+                ]}
+              ></Crosshair>
+              <XAxis title="Average Auton Points Scored" />
+              <YAxis title="Average Teleop Points Scored" />
             </XYPlot>
           </>
         )}
