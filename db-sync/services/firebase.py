@@ -11,9 +11,13 @@ class Firebase:
         # self.bucket = storage.bucket()
 
     def update_match(self, regional, matchNum, alliance, teamNum, matchData):
-        movieRef = self.store.document(f'regional/{regional}/matches/{matchNum}/{alliance}/{teamNum}')
-        movieRef.set({"data": matchData}, merge=True)
+        matchRef = self.store.document(f'regional/{regional}/matches/{matchNum}/{alliance}/{teamNum}')
+        matchDocRef = self.store.document(f'regional/{regional}/matches/{matchNum}')
+        matchRef.set({"data": matchData}, merge=True)
+        matchDocRef.set({}, merge=True);
 
     def update_team(self, regional, matchNum, teamNum, matchData):
-        movieRef = self.store.document(f'regional/{regional}/teams/{teamNum}/matches/{matchNum}')
-        movieRef.set({"data": matchData}, merge=True)
+        teamRef = self.store.document(f'regional/{regional}/teams/{teamNum}/matches/{matchNum}')
+        teamDocRef = self.store.document(f'regional/{regional}/teams/{teamNum}')
+        teamRef.set({"data": matchData}, merge=True)
+        teamDocRef.set({}, merge=True)
