@@ -7,65 +7,42 @@ from services.firebase import Firebase
 if __name__ == "__main__":
     firebase = Firebase()
 
-    scout_df = pd.read_csv('scout.csv')
+    scout_df = pd.read_csv('scout2.csv')
 
     # update movies doc
+
     for index, row in scout_df.iterrows():
         matchDict = row.to_dict()
+        data = {}
         try:
-            matchDict['alliance'] = 'blue' if matchDict['alliance'] == 'b' else 'red'
+            data['teamNum'] = int(matchDict['team'])
 
-            matchDict['attemptHang'] = True if matchDict['attemptHang'] == 'TRUE' else False
-            matchDict['attemptLevel'] = True if matchDict['attemptLevel'] == 'TRUE' else False
+            data['regional'] = matchDict['tournament']
+            data['matchNum'] = int(matchDict['match'])
+            data['alliance'] = 'blue' if matchDict['alliance'] == 'b' else 'red'
 
-            matchDict['autonBottom'] = int(matchDict['autonBottom'])
-            matchDict['autonBottomMissed'] = int(matchDict['autonBottomMissed'])
-            matchDict['autonInner'] = int(matchDict['autonInner'])
-            matchDict['autonInnerMissed'] = int(matchDict['autonInnerMissed'])
-            matchDict['autonUpper'] = int(matchDict['autonUpper'])
-            matchDict['autonUpperMissed'] = int(matchDict['autonUpperMissed'])
+            data['autonBottom'] = int(matchDict['sandstorm_rocket_hatch_1']) + int(matchDict['sandstorm_rocket_hatch_1']) + int(matchDict['sandstorm_rocket_cargo_1']) + int(matchDict['sandstorm_cargoship_cargo']) + int(matchDict['sandstorm_cargoship_hatch'])
+            data['autonInner'] = int(matchDict['sandstorm_rocket_hatch_2']) + int(matchDict["sandstorm_rocket_cargo_2"])
+            data['autonUpper'] = int(matchDict['sandstorm_rocket_hatch_3']) + int(matchDict['sandstorm_rocket_cargo_3'])
 
-            matchDict['buddy'] = True if matchDict['buddy'] == 'TRUE' else False
+            data['teleopBottom'] = int(matchDict['teleop_rocket_hatch_1']) + int(matchDict['teleop_rocket_hatch_1']) + int(matchDict['teleop_rocket_cargo_1']) + int(matchDict['teleop_cargoship_cargo']) + int(matchDict['teleop_cargoship_hatch'])
+            data['teleopInner'] = int(matchDict['teleop_rocket_hatch_2']) + int(matchDict["teleop_rocket_cargo_2"])
+            data['teleopUpper'] = int(matchDict['teleop_rocket_hatch_3']) + int(matchDict['teleop_rocket_cargo_3'])
+
+            data['attemptHang'] = True if "TRUE" in (str(matchDict['teleop_climb_1'])+str(matchDict['teleop_climb_2'])+str(matchDict['teleop_climb_3'])) else False
+            data['hangFail'] = False if "TRUE" in (str(matchDict['teleop_climb_1'])+str(matchDict['teleop_climb_2'])+str(matchDict['teleop_climb_3'])) else True
+
+            data['disabled'] = True if matchDict['disabled'] == 'TRUE' else False
+            data['defense'] = True if matchDict['defense'] == 'TRUE' else False
+
+            data['comments'] = matchDict['comment_scout']
+            data['minfo'] = matchDict['match_id']
             
-            matchDict['climbTime'] = random.randint(1700, 6000)
-
-            matchDict['comments'] = matchDict['comments']
-
-            matchDict['cycles'] = int(matchDict['cycles'])
-
-            matchDict['defense'] = True if matchDict['defense'] == 'TRUE' else False
-            matchDict['disabled'] = True if matchDict['disabled'] == 'TRUE' else False
-
-            matchDict['hangFail'] = True if matchDict['hangFail'] == 'TRUE' else False
-            matchDict['initLineCrosses'] = True if matchDict['initLineCrosses'] == 'TRUE' else False
-            matchDict['levelFail'] = True if matchDict['levelFail'] == 'TRUE' else False
-
-            matchDict['matchNum'] = int(matchDict['match'])
-            matchDict['minfo'] = matchDict['minfo']
-
-            matchDict['position'] = True if matchDict['position'] == 'TRUE' else False
-            matchDict['preloads'] = int(matchDict['match'])
-            matchDict['rotation'] = True if matchDict['rotation'] == 'TRUE' else False
-
-            matchDict['startLocations'] = f"{matchDict['startLocation1']},{matchDict['startLocation2']},{matchDict['startLocation3']}"
-            matchDict['startLocations'] = matchDict['startLocations'].lower()
-
-            matchDict['stuck'] = True if matchDict['stuck'] == 'TRUE' else False
-            matchDict['teamNum'] = int(matchDict['teamNum'])
-
-            matchDict['teleopBottom'] = int(matchDict['teleopBottom'])
-            matchDict['teleopBottomMissed'] = int(matchDict['teleopBottomMissed'])
-            matchDict['teleopInner'] = int(matchDict['teleopInner'])
-            matchDict['teleopInnerMissed'] = int(matchDict['teleopInnerMissed'])
-            matchDict['teleopUpper'] = int(matchDict['teleopUpper'])
-            matchDict['teleopUpperMissed'] = int(matchDict['teleopUpperMissed'])
-
-            matchDict['trench'] = True if matchDict['trench'] == 'TRUE' else False
-
             try:
-                firebase.update_match(matchDict['regional'], matchDict['matchNum'], matchDict['alliance'], matchDict['teamNum'], matchDict)
-                firebase.update_team(matchDict['regional'], matchDict['matchNum'], matchDict['teamNum'], matchDict)
+                firebase.update_match(data['regional'], data['matchNum'], data['alliance'], data['teamNum'], data)
+                firebase.update_team(data['regional'], data['matchNum'], data['teamNum'], data)
             except Exception as e:
                 print(f'could not update {index}, {str(e)}')
         except Exception as e:
             print(f'unable to update row {index}, {str(e)}')
+            pass

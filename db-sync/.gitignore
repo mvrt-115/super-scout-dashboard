@@ -4,3 +4,4 @@ services/certificate.json
 posters/
 channels/
 genres/
+*.csv

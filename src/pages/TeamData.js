@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   DiscreteColorLegend,
   HorizontalGridLines,
@@ -12,12 +12,12 @@ import {
   Crosshair,
   HorizontalBarSeries,
   LabelSeries,
-} from "react-vis";
-import { db } from "../firebase";
-import "react-vis/dist/style.css";
-import * as math from "mathjs";
-import { Button, Col, Row, Table } from "react-bootstrap";
-import TeamGraphs from "../components/TeamGraphs";
+} from 'react-vis';
+import { db } from '../firebase';
+import 'react-vis/dist/style.css';
+import * as math from 'mathjs';
+import { Button, Col, Row, Table } from 'react-bootstrap';
+import TeamGraphs from '../components/TeamGraphs';
 
 // displays the a team's data (team and regional are passed in through link and router stuff)
 function TeamData({ match }) {
@@ -56,7 +56,7 @@ function TeamData({ match }) {
 
   // calculates total auton/teleop points
   const totalPoints = (data, gameState) => {
-    return gameState === "auton"
+    return gameState === 'auton'
       ? data.autonBottom * 2 + data.autonUpper * 4 + data.autonInner * 6
       : data.teleopBottom + data.teleopUpper * 2 + data.teleopInner * 3;
   };
@@ -65,16 +65,16 @@ function TeamData({ match }) {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      console.log("=========LOADING DATA=========");
+      console.log('=========LOADING DATA=========');
       try {
         // if a match is selected get the data from this teams performance in that match from firebase
         if (matchNum) {
           const matchRef = await db
-            .collection("regional")
+            .collection('regional')
             .doc(regional)
-            .collection("teams")
+            .collection('teams')
             .doc(team)
-            .collection("matches")
+            .collection('matches')
             .doc(matchNum)
             .get();
           setMatches([matchRef.data()]);
@@ -82,11 +82,11 @@ function TeamData({ match }) {
         } else {
           // get all matches that the team has played from firebase
           const teamRef = await db
-            .collection("regional")
+            .collection('regional')
             .doc(regional)
-            .collection("teams")
+            .collection('teams')
             .doc(team)
-            .collection("matches")
+            .collection('matches')
             .get();
 
           // temporary variables that will be used to set state
@@ -106,14 +106,14 @@ function TeamData({ match }) {
               ...auton,
               {
                 x: doc.data().data.matchNum,
-                y: totalPoints(doc.data().data, "auton"),
+                y: totalPoints(doc.data().data, 'auton'),
               },
             ];
             teleop = [
               ...teleop,
               {
                 x: doc.data().data.matchNum,
-                y: totalPoints(doc.data().data, "teleop"),
+                y: totalPoints(doc.data().data, 'teleop'),
               },
             ];
             autonBalls = [
@@ -159,18 +159,18 @@ function TeamData({ match }) {
           setPieChartData([
             {
               angle: climbFailsNum,
-              label: climbFailsNum > 0 ? "Failed to Climb" : "",
-              color: "#fcba03",
+              label: climbFailsNum > 0 ? 'Failed to Climb' : '',
+              color: '#fcba03',
             },
             {
               angle: climbSucessNum,
-              label: climbSucessNum > 0 ? "Climb Successes" : "",
-              color: "#7300b5",
+              label: climbSucessNum > 0 ? 'Climb Successes' : '',
+              color: '#7300b5',
             },
             {
               angle: didNotAttemptsNum,
-              label: didNotAttemptsNum > 0 ? "Did not attempt" : "",
-              color: "#A7A6BA",
+              label: didNotAttemptsNum > 0 ? 'Did not attempt' : '',
+              color: '#A7A6BA',
             },
           ]);
 
@@ -178,8 +178,8 @@ function TeamData({ match }) {
             setAutonBalls(autonBalls);
             setTeleopBalls(teleopBalls);
           }
-          console.log("Matches Array", matches);
-          console.log("=========DATA LOADED=========");
+          console.log('Matches Array', matches);
+          console.log('=========DATA LOADED=========');
         }
       } catch (e) {
         console.log(e);
@@ -187,9 +187,9 @@ function TeamData({ match }) {
       setLoading(false);
     };
     const getData = () => fetchData();
-    console.log("=========IN TEAM DATA USE EFFECT=========");
+    console.log('=========IN TEAM DATA USE EFFECT=========');
     getData().then(() =>
-      console.log("=========OUT OF TEAM DATA USE EFFECT=========")
+      console.log('=========OUT OF TEAM DATA USE EFFECT=========')
     );
   }, [matchNum, regional, team, matches.length]);
 
@@ -199,11 +199,11 @@ function TeamData({ match }) {
       <div>
         <h3>
           <Link to="/">Home</Link> /
-          <Link to={"/regional/" + regional}> {regional}</Link> /
+          <Link to={'/regional/' + regional}> {regional}</Link> /
           {matchNum ? (
             <>
-              <Link to={"/teams/" + regional + "/" + team}> Team # {team}</Link>{" "}
-              / Match # {matchNum}{" "}
+              <Link to={'/teams/' + regional + '/' + team}> Team # {team}</Link>{' '}
+              / Match # {matchNum}{' '}
             </>
           ) : (
             <> Team # {team}</>
@@ -246,11 +246,11 @@ function TeamData({ match }) {
                   <h3>
                     <Link
                       to={
-                        "/teams/" +
+                        '/teams/' +
                         regional +
-                        "/" +
+                        '/' +
                         team +
-                        "/" +
+                        '/' +
                         match.data.matchNum
                       }
                     >

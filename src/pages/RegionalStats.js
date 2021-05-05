@@ -1,18 +1,26 @@
-import React, { useEffect, useState } from "react";
-import { Dropdown } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
-import { useRegionalData } from "../contexts/RegionalDataContext";
+import React, { useEffect, useState } from 'react';
+import { Dropdown } from 'react-bootstrap';
+import { Link, useHistory } from 'react-router-dom';
+import { useRegionalData } from '../contexts/RegionalDataContext';
 import {
   Crosshair,
   HorizontalGridLines,
   MarkSeries,
+  makeVisFlexible,
+  makeWidthFlexible,
+  makeHeightFlexible,
   VerticalBarSeries,
   VerticalGridLines,
   XAxis,
   XYPlot,
   YAxis,
-} from "react-vis";
-import * as math from "mathjs";
+} from 'react-vis';
+import { functions } from '../firebase';
+import * as math from 'mathjs';
+
+const FlexibleXYPlot = makeVisFlexible(XYPlot);
+const FlexibleWidthXYPlot = makeWidthFlexible(XYPlot);
+const FlexibleHeightXYPlot = makeHeightFlexible(XYPlot);
 
 const RegionalStats = ({ match }) => {
   const regional = match.params.regional;
@@ -35,7 +43,7 @@ const RegionalStats = ({ match }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log("=========LOADING DATA=========");
+      console.log('=========LOADING DATA=========');
       try {
         let regionalData = await updateRegionalData(regional);
         await updateRegionals();
@@ -43,8 +51,8 @@ const RegionalStats = ({ match }) => {
         console.log(Object.keys(regionalData).length);
 
         if (Object.keys(regionalData).length === 0) {
-          console.warn("Regional data is empty", regionalData);
-          history.push("/");
+          console.warn('Regional data is empty', regionalData);
+          history.push('/');
         }
         const tpbt = Object.keys(regionalData).map((team) => ({
           y:
@@ -124,6 +132,9 @@ const RegionalStats = ({ match }) => {
         tpbt.sort((a, b) => (a.y < b.y ? 1 : -1));
 
         tpbt.forEach((team, index) => (team.x = index + 1));
+        tpbt.forEach((team, index) => (team.x += 1));
+
+        console.log(tpbt);
 
         lineData.forEach((team, index) => (team.x = index + 1));
 
@@ -131,14 +142,22 @@ const RegionalStats = ({ match }) => {
         setAvgTeleopPointsByTeam(avgTeleop);
         setAutonTeleopEndGameMarkSeries(teleopAndAutonMarkSeriesTemp);
 
+        console.log({ avgAuton });
+        console.log({ avgTeleop });
+
         setTotalPointsByTeam(tpbt);
         setLineData(lineData);
-        console.log("=========DATA LOADED=========");
+        console.log('=========DATA LOADED=========');
+
+        const res = await functions.httpsCallable('tbaAPI')({
+          route: 'event/2019cave/rankings',
+        });
+        console.log('res', res);
       } catch (e) {
         console.log(e);
       }
     };
-    console.log("=========IN REGIONAL STATS USE EFFECT=========");
+    console.log('=========IN REGIONAL STATS USE EFFECT=========');
     fetchData().then(() => {
       setLoading(false);
     });
@@ -148,8 +167,8 @@ const RegionalStats = ({ match }) => {
     <>
       <div>
         <h3>
-          <Link to="/">Home</Link> /{" "}
-          <Link to={"/regional/" + regional}>{regional}</Link> / Stats
+          <Link to="/">Home</Link> /{' '}
+          <Link to={'/regional/' + regional}>{regional}</Link> / Stats
         </h3>
         <Dropdown>
           <Dropdown.Toggle>Change Regional</Dropdown.Toggle>
@@ -159,7 +178,7 @@ const RegionalStats = ({ match }) => {
               <Dropdown.Item
                 as={Link}
                 disabled={reg === regional}
-                to={"/compare-teams/" + reg}
+                to={'/compare-teams/' + reg}
                 key={reg}
               >
                 {reg}
@@ -171,25 +190,10 @@ const RegionalStats = ({ match }) => {
         {!loading && (
           <>
             <h4>
-              Total Points vs Team Number (sorted by most post points scored)
-            </h4>
-            <XYPlot width={1500} height={600}>
-              <HorizontalGridLines />
-
-              <VerticalBarSeries data={totalPointsByTeam} color="#fcba03" />
-
-              <XAxis
-                title="Team #"
-                tickFormat={(val, i) => totalPointsByTeam[i].team}
-                tickValues={totalPointsByTeam.map((team) => team.x)}
-              />
-              <YAxis title="Points" />
-            </XYPlot>
-            <h4>
               Average Auton and Teleop Points vs Team Number (sorted by most
               post points scored, purple is teleop, yellow is auton)
             </h4>
-            <XYPlot width={1500} height={600} stackBy="y">
+            <XYPlot width={1500} height={600}>
               <HorizontalGridLines />
 
               <VerticalBarSeries data={avgAutonByTeam} color="#fcba03" />
@@ -202,8 +206,8 @@ const RegionalStats = ({ match }) => {
               />
               <YAxis title="Points" />
             </XYPlot>
-            <h4>Average Points vs Team Rank</h4>
-            <XYPlot width={1500} height={600} stackBy="y">
+            {/* <h4>Average Points vs Team Rank</h4>
+            <FlexibleWidthXYPlot height={700} stackBy="y">
               <HorizontalGridLines />
               <VerticalGridLines />
 
@@ -215,13 +219,13 @@ const RegionalStats = ({ match }) => {
                 tickValues={totalPointsByTeam.map((team) => team.x)}
               />
               <YAxis title="Points" />
-            </XYPlot>
+            </FlexibleWidthXYPlot> */}
             <h4>
               Average Teleop Points vs Average Auton Points (point size is
               endgame points)
             </h4>
 
-            <XYPlot width={1500} height={300}>
+            <FlexibleWidthXYPlot height={700} stackBy="y">
               <MarkSeries
                 className="mark-series-example"
                 sizeRange={[2, 16]}
@@ -238,16 +242,16 @@ const RegionalStats = ({ match }) => {
 
               <Crosshair
                 values={autonTeleopEndGameMarkSeriesCrossHair}
-                titleFormat={(d) => ({ title: "Team", value: d[0].team })}
+                titleFormat={(d) => ({ title: 'Team', value: d[0].team })}
                 itemsFormat={(d) => [
-                  { title: "Average Auton points", value: d[0].x },
-                  { title: "Average Teleop points", value: d[0].y },
-                  { title: "Average Endgame points", value: d[0].size * 1.5 },
+                  { title: 'Average Auton points', value: d[0].x },
+                  { title: 'Average Teleop points', value: d[0].y },
+                  { title: 'Average Endgame points', value: d[0].size * 1.5 },
                 ]}
               ></Crosshair>
               <XAxis title="Average Auton Points Scored" />
               <YAxis title="Average Teleop Points Scored" />
-            </XYPlot>
+            </FlexibleWidthXYPlot>
           </>
         )}
       </div>
