@@ -21,13 +21,13 @@ if __name__ == "__main__":
             data['matchNum'] = int(matchDict['match'])
             data['alliance'] = 'blue' if matchDict['alliance'] == 'b' else 'red'
 
-            data['autonBottom'] = int(matchDict['sandstorm_rocket_hatch_1']) + int(matchDict['sandstorm_rocket_hatch_1']) + int(matchDict['sandstorm_rocket_cargo_1']) + int(matchDict['sandstorm_cargoship_cargo']) + int(matchDict['sandstorm_cargoship_hatch'])
-            data['autonInner'] = int(matchDict['sandstorm_rocket_hatch_2']) + int(matchDict["sandstorm_rocket_cargo_2"])
-            data['autonUpper'] = int(matchDict['sandstorm_rocket_hatch_3']) + int(matchDict['sandstorm_rocket_cargo_3'])
+            data['autonBottom'] = 2*int(matchDict['sandstorm_rocket_hatch_1']) + 2*int(matchDict['sandstorm_rocket_hatch_1']) + 3*int(matchDict['sandstorm_rocket_cargo_1']) + 3*int(matchDict['sandstorm_cargoship_cargo']) + 2*int(matchDict['sandstorm_cargoship_hatch'])
+            data['autonInner'] = 2*int(matchDict['sandstorm_rocket_hatch_2']) + 3*int(matchDict["sandstorm_rocket_cargo_2"])
+            data['autonUpper'] = 2*int(matchDict['sandstorm_rocket_hatch_3']) + 3*int(matchDict['sandstorm_rocket_cargo_3'])
 
-            data['teleopBottom'] = int(matchDict['teleop_rocket_hatch_1']) + int(matchDict['teleop_rocket_hatch_1']) + int(matchDict['teleop_rocket_cargo_1']) + int(matchDict['teleop_cargoship_cargo']) + int(matchDict['teleop_cargoship_hatch'])
-            data['teleopInner'] = int(matchDict['teleop_rocket_hatch_2']) + int(matchDict["teleop_rocket_cargo_2"])
-            data['teleopUpper'] = int(matchDict['teleop_rocket_hatch_3']) + int(matchDict['teleop_rocket_cargo_3'])
+            data['teleopBottom'] = 2*int(matchDict['teleop_rocket_hatch_1']) + 2*int(matchDict['teleop_rocket_hatch_1']) + 3*int(matchDict['teleop_rocket_cargo_1']) + 3*int(matchDict['teleop_cargoship_cargo']) + 2*int(matchDict['teleop_cargoship_hatch'])
+            data['teleopInner'] = 2*int(matchDict['teleop_rocket_hatch_2']) + 3*int(matchDict["teleop_rocket_cargo_2"])
+            data['teleopUpper'] = 2*int(matchDict['teleop_rocket_hatch_3']) + 3*int(matchDict['teleop_rocket_cargo_3'])
 
             data['attemptHang'] = True if "TRUE" in (str(matchDict['teleop_climb_1'])+str(matchDict['teleop_climb_2'])+str(matchDict['teleop_climb_3'])) else False
             data['hangFail'] = False if "TRUE" in (str(matchDict['teleop_climb_1'])+str(matchDict['teleop_climb_2'])+str(matchDict['teleop_climb_3'])) else True
