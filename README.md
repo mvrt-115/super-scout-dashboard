@@ -22,6 +22,13 @@ firebase deploy --only hosting:mvrt-super-scout
 firebase deploy --only functions
 ```
 
+### List Environment Variables
+
+```
+firebase functions:config:get
+firebase functions:config:set tba.id="key"
+```
+
 ### Visit Website
 
 [Click this link](https://mvrt-super-scout.web.app/)

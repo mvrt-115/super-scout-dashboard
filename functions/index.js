@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
 const cors = require('cors')({ origin: true });
+const axios = require('axios');
 
 exports.tbaAPI = functions.https.onCall((data, context) => {
   console.log(JSON.stringify(data));
@@ -8,15 +9,15 @@ exports.tbaAPI = functions.https.onCall((data, context) => {
     const { route } = data;
     try {
       const response = await axios.get(
-        'http://www.thebluealliance.com/api/v3/' + route,
+        'https://www.thebluealliance.com/api/v3/' + route,
         {
           headers: {
             'Content-Type': 'application/json',
-            'X-TBA-Auth-Key': functions.config().tba.id,
+            'X-TBA-Auth-Key': 'functions.config().tba.id',
           },
         }
       );
-      return JSON.stringify(response);
+      return JSON.stringify(response.data);
     } catch (e) {
       console.log(JSON.stringify(e));
       throw new functions.https.HttpsError(
