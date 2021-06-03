@@ -17,7 +17,6 @@ const MeanGraph = ({ ballsScored, gameState, colors, team, units }) => {
   const [crosshair, setCrosshair] = useState([]);
 
   useEffect(() => {
-    console.log(team);
     setData({
       min: [{ y: team, x: math.min(ballsScored) }],
       mean: [{ y: team, x: math.mean(ballsScored) - math.min(ballsScored) }],

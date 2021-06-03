@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { db } from "../firebase";
 
 const RegionalDataContext = createContext();
@@ -18,23 +18,25 @@ export const RegionalDataProvider = ({ children }) => {
       .collection("teams")
       .get();
 
-    console.log(regional);
-
     let teams = teamsRef.docs.map((doc) => doc.id);
     let regionalData = {};
 
-    teams.forEach(async (team) => {
-      const teamRef = await db
-        .collection("regional")
-        .doc(regional)
-        .collection("teams")
-        .doc(team)
-        .collection("matches")
-        .get();
+    const teamRefs = await Promise.all(
+      teams.map((team) =>
+        db
+          .collection("regional")
+          .doc(regional)
+          .collection("teams")
+          .doc(team)
+          .collection("matches")
+          .get()
+      )
+    );
+
+    teamRefs.forEach((teamRef, index) => {
       const teamData = teamRef.docs.map((doc) => doc.data());
 
-      regionalData[team] = {};
-      let hangAttempted = true;
+      regionalData[teams[index]] = {};
 
       Object.keys(teamData[0].data).forEach((key) => {
         if (
@@ -46,7 +48,7 @@ export const RegionalDataProvider = ({ children }) => {
         ) {
           const arr = teamData.map((team) => team.data[key]);
 
-          regionalData[team][key] = arr;
+          regionalData[teams[index]][key] = arr;
         }
       });
       const endgamePoints = teamData.map((match) => {
@@ -56,13 +58,8 @@ export const RegionalDataProvider = ({ children }) => {
         if (!match.data.attemptHang && !match.data.attemptLevel) points = 5;
         return points;
       });
-      regionalData[team]["endgamePoints"] = endgamePoints;
+      regionalData[teams[index]]["endgamePoints"] = endgamePoints;
     });
-
-    console.log(
-      "Min, Mean, Median, Max Data for all teams at regional",
-      regionalData
-    );
     setRegionalData(regionalData);
     return regionalData;
   };
@@ -80,6 +77,11 @@ export const RegionalDataProvider = ({ children }) => {
     updateRegionalData,
     updateRegionals,
   };
+
+  useEffect(() => {
+    updateRegionalData();
+    updateRegionals();
+  }, []);
 
   return (
     <RegionalDataContext.Provider value={value}>
