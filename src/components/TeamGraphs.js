@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   DiscreteColorLegend,
   HorizontalGridLines,
@@ -9,10 +9,8 @@ import {
   YAxis,
   RadialChart,
   Crosshair,
-  HorizontalBarSeries,
-  LabelSeries,
 } from "react-vis";
-import { Button, Col, Row, Table } from "react-bootstrap";
+import { Col, Row, Table } from "react-bootstrap";
 import MeanGraph from "./MeanGraph";
 import StackedBarChart from "./StackedBarChart";
 const TeamGraphs = ({
@@ -22,9 +20,8 @@ const TeamGraphs = ({
   team,
   dataG1Teleop,
   dataG1Auton,
+  comments,
 }) => {
-  const [crosshairG2, setCrosshairG2] = useState([]);
-  const [crosshairG3, setCrosshairG3] = useState([]);
   const [crosshairG4, setCrosshairG4] = useState([]);
 
   return (
@@ -140,6 +137,25 @@ const TeamGraphs = ({
                           ? "Fail"
                           : "Success"}
                       </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </Table>
+          </Col>
+          <Col>
+            <Table>
+              <thead>
+                <tr>
+                  <th>Match #</th>
+                  <th>Comments</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.matches &&
+                  data.matches.map((match) => (
+                    <tr key={match.data.matchNum}>
+                      <td>{match.data.matchNum}</td>
+                      <td>{`${comments[match.data.matchNum]}`}</td>
                     </tr>
                   ))}
               </tbody>

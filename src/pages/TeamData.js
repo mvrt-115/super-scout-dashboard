@@ -84,6 +84,7 @@ function TeamData({ match }) {
           let climbSucessNum = 0;
           let didNotAttemptsNum = 0;
           let pointsData = [];
+          let comments = {};
 
           let matches = teamRef.docs.map((doc, index) => {
             if (!doc.exists) return {};
@@ -122,6 +123,8 @@ function TeamData({ match }) {
               },
             ];
 
+            comments[doc.data().data.matchNum] = doc.data().data.comments;
+
             if (!doc.data().data.attemptHang) {
               didNotAttemptsNum++;
             }
@@ -137,6 +140,8 @@ function TeamData({ match }) {
             return doc.data();
           });
           setMatches(matches);
+
+          setComments(comments);
 
           // changing the state of different things
           setDataG1Auton(auton);
@@ -196,6 +201,8 @@ function TeamData({ match }) {
           const oprsJSON = await oprsResponse.json();
 
           setOPR(oprsJSON.oprs[`frc${team}`]);
+
+          console.log("rerender");
         }
       } catch (e) {
         console.log(e);
@@ -246,6 +253,7 @@ function TeamData({ match }) {
           team={team}
           dataG1Auton={dataG1Auton}
           dataG1Teleop={dataG1Teleop}
+          comments={comments}
         />
       )}
       {/* displays match data from matches array */}

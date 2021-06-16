@@ -18,9 +18,23 @@ const MeanGraph = ({ ballsScored, gameState, colors, team, units }) => {
 
   useEffect(() => {
     setData({
-      min: [{ y: team, x: math.min(ballsScored) }],
-      mean: [{ y: team, x: math.mean(ballsScored) - math.min(ballsScored) }],
-      max: [{ y: team, x: math.max(ballsScored) - math.mean(ballsScored) }],
+      min: [{ y: team, x: math.min(ballsScored.length ? ballsScored : [0]) }],
+      mean: [
+        {
+          y: team,
+          x:
+            math.mean(ballsScored.length ? ballsScored : [0]) -
+            math.min(ballsScored.length ? ballsScored : [0]),
+        },
+      ],
+      max: [
+        {
+          y: team,
+          x:
+            math.max(ballsScored.length ? ballsScored : [0]) -
+            math.mean(ballsScored.length ? ballsScored : [0]),
+        },
+      ],
     });
   }, [ballsScored]);
 
