@@ -24,20 +24,21 @@ function TeamData({ match }) {
   // auton and teleop data for the first graph
   const [dataG1Auton, setDataG1Auton] = useState([]);
   const [dataG1Teleop, setDataG1Teleop] = useState([]);
-  const [crosshairG1, setCrosshairG1] = useState([]);
 
   // auton and teleop data for min, median, max graphs
   const [autonBalls, setAutonBalls] = useState([]);
   const [teleopBalls, setTeleopBalls] = useState([]);
-  const [crosshairG2, setCrosshairG2] = useState([]);
-  const [crosshairG3, setCrosshairG3] = useState([]);
 
   // total points scored
   const [points, setPoints] = useState([]);
-  const [crosshairG4, setCrosshairG4] = useState([]);
+
+  const [comments, setComments] = useState({});
 
   // Radial chart data to keep track of climb fails and successes
   const [pieChartData, setPieChartData] = useState([]);
+
+  const [rank, setRank] = useState(0);
+  const [OPR, setOPR] = useState(0);
 
   // calculates total auton/teleop points
   const totalPoints = (data, gameState) => {
@@ -62,6 +63,7 @@ function TeamData({ match }) {
             .doc(matchNum)
             .get();
           setMatches([matchRef.data()]);
+
           // otherwise get all team dataa
         } else {
           // get all matches that the team has played from firebase
@@ -162,6 +164,38 @@ function TeamData({ match }) {
             setAutonBalls(autonBalls);
             setTeleopBalls(teleopBalls);
           }
+
+          const rankingsResponse = await fetch(
+            `https://www.thebluealliance.com/api/v3/event/2019${
+              regional === "CAVE" ? "cave" : regional === "CC19" ? "cc" : "cacg"
+            }/rankings`,
+            {
+              headers: {
+                "X-TBA-Auth-Key": process.env.REACT_APP_TBA_KEY,
+              },
+            }
+          );
+          const rankingsJSON = await rankingsResponse.json();
+
+          const rankings = rankingsJSON.rankings.map((team) =>
+            team.team_key.substring(3)
+          );
+
+          setRank(rankings.indexOf(team) + 1);
+
+          const oprsResponse = await fetch(
+            `https://www.thebluealliance.com/api/v3/event/2019${
+              regional === "CAVE" ? "cave" : regional === "CC19" ? "cc" : "cacg"
+            }/oprs`,
+            {
+              headers: {
+                "X-TBA-Auth-Key": process.env.REACT_APP_TBA_KEY,
+              },
+            }
+          );
+          const oprsJSON = await oprsResponse.json();
+
+          setOPR(oprsJSON.oprs[`frc${team}`]);
         }
       } catch (e) {
         console.log(e);
@@ -169,7 +203,7 @@ function TeamData({ match }) {
       setLoading(false);
     };
     fetchData();
-  }, [matchNum, regional, team, matches.length]);
+  }, [matchNum, regional, team]);
 
   return (
     <>
@@ -192,6 +226,12 @@ function TeamData({ match }) {
         </Button>
       </div>
       {/* once loaded show the data */}
+      <div>
+        <h4>About Team {team}</h4>
+        <div style={{ fontSize: "1.5em" }}>
+          Rank: {rank}, OPR: {Math.round(OPR * 100) / 100}
+        </div>
+      </div>
       {!loading && (
         <TeamGraphs
           data={{
