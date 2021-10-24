@@ -1,38 +1,96 @@
-.App {
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+body {
+  background-color: white;
+  font-family: "Roboto";
+}
+
+h1 {
+  font-size: 40px;
+  text-transform: uppercase;
+}
+.team-button {
+  background-color: purple;
+  margin-left: 0;
+  color: white;
+  font-size: 1.5rem;
+  text-decoration: none;
+  border-radius: 10px;
+  position: relative;
+  transition: all 0.2s;
+  margin: 8px;
+  width: 18.5%;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.team-button:hover {
+  transform: scale(1.1);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.team-button a {
+  color: inherit;
+  text-decoration: inherit;
+  width: 100%;
+  display: inline-block;
+  padding: 15px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+.team-button a:after {
+  opacity: 1;
+  /* transition: all 0.2s; */
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  padding: 13px 0px;
+}
+.recharts-wrapper {
+  margin: 0 auto;
+}
+.link {
+  list-style-type: none;
+  background-color: purple;
+  padding: 0px 30px;
+  margin: 10px 0px;
+  margin-left: 0;
   color: white;
+  font-size: 25px;
+  text-decoration: none;
+  border-radius: 10px;
+  position: relative;
+  transition: all 0.2s;
+}
+.link a {
+  color: inherit;
+  text-decoration: inherit;
+  width: 100%;
+  display: inline-block;
+  padding: 15px 0px;
 }
 
-.App-link {
-  color: #61dafb;
+.link:hover {
+  transform: scale(1.005);
 }
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.link:hover a:after {
+  opacity: 1;
+}
+ul {
+  padding: 0;
+  list-style-type: none;
+}
+.btn,
+.dropdown-toggle {
+  color: white;
+  background-color: #7300b5;
+  border: none;
+}
+.btn:hover,
+.dropdown-toggle:hover {
+  background-color: #64029c;
+}
+.btn:disabled,
+.dropdown-toggle:disabled {
+  background-color: #7300b5;
+}
+.btn:focus {
+  background-color: #8b04da;
 }
