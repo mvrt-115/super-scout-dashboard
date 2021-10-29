@@ -4,7 +4,7 @@ import { Container, Heading, Text } from "@chakra-ui/layout";
 import { Tooltip } from "@chakra-ui/tooltip";
 import React, { FC, useEffect, useState } from "react";
 import { Cell, Legend, Pie, PieChart } from "recharts";
-import GraphInput from "../components/GraphInput";
+import GraphInput from "../components/TeamGraphInput";
 import { db } from "../firebase";
 
 interface TeamDataProps {
@@ -183,6 +183,12 @@ const TeamData: FC<TeamDataProps> = ({ match }) => {
         {graphs.map((graph, index) => (
           <GraphInput teamData={teamData} key={index} />
         ))}
+        <IconButton
+          aria-label="Add Graph"
+          icon={<AddIcon />}
+          onClick={() => setGraphs([...graphs, 1])}
+          colorScheme="green"
+        />
         <Tooltip label="Add Graph">
           <IconButton
             marginTop="5%"

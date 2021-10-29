@@ -6,16 +6,16 @@ import { Tooltip } from "@chakra-ui/tooltip";
 import React, { FC, useEffect, useState } from "react";
 import Graph, { PointList } from "./Graph";
 
-interface GraphInputProps {
+interface TeamGraphInputProps {
   teamData: any;
 }
 
-const GraphInput: FC<GraphInputProps> = ({ teamData }) => {
+const GraphInput: FC<TeamGraphInputProps> = ({ teamData }) => {
   const [graphPoints, setGraphPoints] = useState<PointList[]>([]);
   const [keys, setKeys] = useState<string[]>([]);
   const [keyOptions, setKeyOptions] = useState<string[]>([]);
   const [graphType, setGraphType] = useState<
-    "Bar" | "Area" | "Line" | "Scatter" | "Pie"
+    "Bar" | "Area" | "Line" | "Scatter"
   >("Bar");
   const [xAxis, setXAxis] = useState<string>("matchNum");
   const [y1Axis, setY1Axis] = useState<string>("autonPoints");
@@ -196,7 +196,6 @@ const GraphInput: FC<GraphInputProps> = ({ teamData }) => {
               <option value="Area">Area</option>
               <option value="Line">Line</option>
               <option value="Scatter">Scatter</option>
-              <option value="Pie">Pie</option>
             </Select>
             <Tooltip label="Delete Graph">
               <IconButton

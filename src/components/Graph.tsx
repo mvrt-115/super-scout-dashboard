@@ -57,7 +57,7 @@ const Graph: FC<GraphProps> = ({ data, type, keys, xLabel, yLabel }) => {
   return (
     <>
       <ComposedChart
-        width={730}
+        width={1000}
         height={250}
         data={graphData}
         margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
